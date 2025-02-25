@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Login</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <h2>Login</h2>
+  <form id="loginForm" method="POST" action="http://localhost/digital-wallet-platform/backend/login.php">
+    <label for="email">Email:</label>
+    <input type="email" name="email" id="email" placeholder="Enter your email" required>
+    <br><br>
+    
+    <label for="password">Password:</label>
+    <input type="password" name="password" id="password" placeholder="Enter your password" required>
+    <br><br>
+    
+    <input type="submit" value="Login">
+  </form>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      
+      axios.post(this.action, formData)
+        .then(function(response) {
+          alert(response.data.message);
+          if (response.data.status === 'success') {
+            window.location.href = '/digital-wallet-platform/user-panel/dashboard.html';
+          }
+        })
+        .catch(function(error) {
+          console.error('Error:', error);
+          alert('An error occurred while processing your login.');
+        });
+    });
+  </script>
+</body>
+</html>
