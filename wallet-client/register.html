@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register | Digital Wallet</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="form-box">
+      <h2>Create Your Wallet</h2>
+      <p class="subtext">Register to start managing your digital finances</p>
+
+      <form id="registerForm" method="POST" action="http://localhost/digital-wallet-platform/wallet-server/user/v1/auth/register.php">
+        <div class="input-group">
+          <input type="email" name="email" id="email" placeholder="Email" required>
+          <small class="error-message"></small>
+        </div>
+        <div class="input-group">
+          <input type="password" name="password" id="password" placeholder="Password" required minlength="6">
+          <small class="error-message"></small>
+        </div>
+        <div class="input-group">
+          <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm Password" required minlength="6">
+          <small class="error-message"></small>
+        </div>
+        <button type="submit" class="btn">Create Wallet</button>
+      </form>
+
+      <p class="auth-link">Already have an account? <a href="login.html">Log in</a></p>
+    </div>
+  </div>
+
+  <script src="js/register.js"></script>
+</body>
+</html>

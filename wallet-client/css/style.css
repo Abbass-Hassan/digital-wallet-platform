@@ -1,0 +1,140 @@
+/* 🎨 Global Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+/* 🏡 Full Page Layout */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+    background: #f9fafb;
+}
+
+/* 📦 Form Container (Shared for Login & Register) */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+/* 📝 Form Box */
+.form-box {
+    background: #ffffff;
+    padding: 2.5rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    width: 100%;
+    max-width: 420px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.form-box:hover {
+    transform: translateY(-3px);
+}
+
+/* 🎯 Titles & Subtitles */
+h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 10px;
+}
+
+.subtext {
+    font-size: 0.95rem;
+    color: #6b7280;
+    margin-bottom: 20px;
+}
+
+/* ✍️ Input Fields */
+.input-group {
+    position: relative;
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: #f9fafb;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-group input:focus {
+    border-color: #fcd535;
+    outline: none;
+    box-shadow: 0 0 8px rgba(252, 213, 53, 0.4);
+}
+
+/* 🚨 Error Message */
+.input-group .error-message {
+    color: red;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 6px;
+    min-height: 22px; /* Ensures consistent spacing */
+    text-align: left;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.input-group.error .error-message {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* 🔘 Buttons */
+.btn {
+    margin-top: 15px;
+    background: linear-gradient(135deg, #fcd535, #eab308);
+    border: none;
+    padding: 15px;
+    width: 100%;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(234, 179, 8, 0.4);
+}
+
+/* 🔗 Login/Register Link */
+.auth-link {
+    margin-top: 12px;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.auth-link a {
+    color: #fcd535;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-link a:hover {
+    text-decoration: underline;
+}
+
+/* ✅ Fix for Login Page */
+.login-page .form-box {
+    max-width: 420px;
+    padding: 2.5rem;
+    text-align: center;
+}

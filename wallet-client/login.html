@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Login | Digital Wallet</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="form-box">
+      <h2>Welcome Back</h2>
+      <p class="subtext">Login to your account</p>
+
+      <form id="loginForm" method="POST" action="http://localhost/digital-wallet-platform/wallet-server/user/v1/auth/login.php">
+        <div class="input-group">
+          <input type="email" name="email" id="email" placeholder="Email" required>
+        </div>
+        <div class="input-group">
+          <input type="password" name="password" id="password" placeholder="Password" required>
+        </div>
+        <button type="submit" class="btn">Login</button>
+      </form>
+
+      <p class="auth-link">Don't have an account? <a href="register.html">Sign up</a></p>
+    </div>
+  </div>
+
+  <script src="js/login.js"></script>
+          
+</body>
+</html>
