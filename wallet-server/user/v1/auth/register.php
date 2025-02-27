@@ -39,8 +39,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if ($check_stmt->rowCount() > 0) {
             $response["message"] = "Email is already registered";
         } else {
-            // 🚀 Insert new user into database
-            $stmt = $conn->prepare("INSERT INTO users (email, password, role, is_validated) VALUES (:email, :password, 0, 0)");
+            // 🚀 Insert new user into database (WITHOUT is_validated)
+            $stmt = $conn->prepare("INSERT INTO users (email, password, role) VALUES (:email, :password, 0)");
             $stmt->bindParam(':email', $email);
             $stmt->bindParam(':password', $hashed_password);
 
