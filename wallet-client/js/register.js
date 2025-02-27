@@ -8,7 +8,7 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
         if (response.data && response.data.message) {
           alert(response.data.message);
           if (response.data.status === 'success') {
-            window.location.href = '/digital-wallet-platform/wallet-client/dashboard.html';
+            window.location.href = '/digital-wallet-platform/wallet-client/verification.html';
           }
         } else {
           alert("Unexpected response from server.");

@@ -138,3 +138,69 @@ h2 {
     padding: 2.5rem;
     text-align: center;
 }
+
+/* 🛡️ Verification Page Styles */
+.verification-container {
+    background: #ffffff;
+    color: #1e293b;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+}
+
+.verification-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.upload-section h2 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.upload-section p {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.upload-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f9fafb;
+    padding: 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    transition: background 0.3s;
+}
+
+.upload-box:hover {
+    background: #eaeaea;
+}
+
+.upload-text {
+    font-size: 1rem;
+    color: #1e293b;
+}
+
+.guidelines {
+    background: #f9fafb;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.guidelines p {
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 8px;
+}

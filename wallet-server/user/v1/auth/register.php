@@ -1,6 +1,7 @@
 <?php
 header("Content-Type: application/json"); // Set JSON response header
 require_once __DIR__ . '/../../../connection/db.php'; // Include database connection
+session_start(); // Start session
 
 $response = ["status" => "error", "message" => "Something went wrong"];
 
@@ -44,6 +45,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $stmt->bindParam(':password', $hashed_password);
 
             if ($stmt->execute()) {
+                $user_id = $conn->lastInsertId(); // Get the last inserted user ID
+                $_SESSION["user_id"] = $user_id; // Store user ID in session
+                
                 $response = ["status" => "success", "message" => "Registration successful"];
             } else {
                 $response["message"] = "Database error: Unable to register";
