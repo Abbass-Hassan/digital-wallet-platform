@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login | Digital Wallet</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="form-box">
+      <h2>Admin Login</h2>
+      <p class="subtext">Sign in to access the admin panel</p>
+
+      <form id="adminLoginForm" method="POST" action="http://localhost/digital-wallet-platform/wallet-server/admin/v1/auth/login.php">
+        <div class="input-group">
+          <input type="email" name="email" id="email" placeholder="Admin Email" required>
+        </div>
+        <div class="input-group">
+          <input type="password" name="password" id="password" placeholder="Password" required>
+        </div>
+        <button type="submit" class="btn">Login</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/login.js"></script>
+</body>
+</html>
