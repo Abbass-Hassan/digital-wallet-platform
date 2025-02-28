@@ -1,2 +1,66 @@
-<h2>Dashboard</h2>
-<a href="http://localhost/digital-wallet-platform/wallet-server/user/v1/auth/logout.php" class="btn">Logout</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard-body">
+
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+        <div class="dashboard-sidebar-logo">Wallet</div>
+        <ul class="dashboard-sidebar-links">
+            <li class="dashboard-sidebar-item active">Dashboard</li>
+            <li class="dashboard-sidebar-item">Assets</li>
+            <li class="dashboard-sidebar-item">Orders</li>
+            <li class="dashboard-sidebar-item">Rewards Hub</li>
+            <li class="dashboard-sidebar-item">Referral</li>
+            <li class="dashboard-sidebar-item">Account</li>
+            <li class="dashboard-sidebar-item">Settings</li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="dashboard-user">
+                <div class="dashboard-user-avatar"></div>
+                <div class="dashboard-user-info">
+                    <h2 class="dashboard-user-name">User-30ee7</h2>
+                    <p class="dashboard-user-meta">VIP Level: Regular User</p>
+                </div>
+            </div>
+            <button class="dashboard-deposit-btn">Deposit</button>
+        </header>
+
+        <!-- Dashboard Widgets -->
+        <section class="dashboard-widgets">
+            <div class="dashboard-widget dashboard-widget-highlight">
+                <h3 class="dashboard-widget-title">Verify Account</h3>
+                <p class="dashboard-widget-text">Complete identity verification to access all services.</p>
+                <button class="dashboard-widget-btn">Verify Now</button>
+            </div>
+
+            <div class="dashboard-widget">
+                <h3 class="dashboard-widget-title">Estimated Balance</h3>
+                <p class="dashboard-widget-text">0.00 BTC ≈ $0.00</p>
+                <div class="dashboard-actions">
+                    <button class="dashboard-action-btn">Deposit</button>
+                    <button class="dashboard-action-btn">Withdraw</button>
+                    <button class="dashboard-action-btn">Cash In</button>
+                </div>
+            </div>
+
+            <div class="dashboard-widget">
+                <h3 class="dashboard-widget-title">Deposit</h3>
+                <p class="dashboard-widget-status">Pending</p>
+            </div>
+
+        </section>
+    </main>
+
+</body>
+</html>

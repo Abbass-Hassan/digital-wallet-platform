@@ -10,7 +10,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $password = $_POST["password"];
 
     try {
-        $stmt = $conn->prepare("SELECT id, email, password, role, is_validated FROM users WHERE email = :email");
+        $stmt = $conn->prepare("
+            SELECT 
+                users.id, users.email, users.password, users.role, 
+                COALESCE(verifications.is_validated, 0) AS is_validated
+            FROM users
+            LEFT JOIN verifications ON users.id = verifications.user_id
+            WHERE users.email = :email
+        ");
         $stmt->bindParam(':email', $email);
         $stmt->execute();
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -30,7 +37,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         "user" => [
                             "id" => $user["id"],
                             "email" => $user["email"],
-                            "role" => $user["role"]
+                            "role" => $user["role"],
+                            "is_validated" => $user["is_validated"]
                         ]
                     ];
                 }
