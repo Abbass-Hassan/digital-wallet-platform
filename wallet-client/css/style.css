@@ -370,3 +370,80 @@
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(234, 179, 8, 0.4);
 }
+
+
+
+
+/* Transaction Container (for Deposit & Withdraw pages) */
+.transaction-container {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+/* Transaction Title */
+.transaction-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Transaction Form */
+.transaction-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Transaction Field */
+.transaction-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+/* Transaction Label */
+.transaction-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Transaction Input */
+.transaction-input {
+    padding: 10px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: #f9fafb;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.transaction-input:focus {
+    border-color: #fcd535;
+    outline: none;
+    box-shadow: 0 0 8px rgba(252, 213, 53, 0.4);
+}
+
+/* Transaction Button */
+.transaction-btn {
+    background: linear-gradient(135deg, #fcd535, #eab308);
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.transaction-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(234, 179, 8, 0.4);
+}
