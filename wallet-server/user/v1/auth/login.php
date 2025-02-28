@@ -31,6 +31,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $_SESSION["user_email"] = $user["email"];
                     $_SESSION["user_role"] = $user["role"]; // 0 = User, 1 = Admin
 
+                    // ✅ Store user session data in a cookie for frontend persistence
+                    setcookie("user_id", $user["id"], time() + 86400, "/"); // Expires in 1 day
+                    setcookie("user_email", $user["email"], time() + 86400, "/");
+                    setcookie("user_role", $user["role"], time() + 86400, "/");
+
                     $response = [
                         "status" => "success",
                         "message" => "Login successful",

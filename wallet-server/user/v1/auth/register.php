@@ -41,9 +41,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $stmt->bindParam(':password', $hashed_password);
 
             if ($stmt->execute()) {
-                $user_id = $conn->lastInsertId();
+                $user_id = $conn->lastInsertId(); // Get new user ID
+
+                // ✅ Insert empty values instead of NULL
+                $profile_stmt = $conn->prepare("
+                    INSERT INTO user_profiles (user_id, full_name, date_of_birth, phone_number, street_address, city, country) 
+                    VALUES (:user_id, '', NULL, '', '', '', '')
+                ");
+                $profile_stmt->bindParam(':user_id', $user_id);
+                $profile_stmt->execute();
+
                 $_SESSION["user_id"] = $user_id;
-                
+                $_SESSION["user_email"] = $email;
+                $_SESSION["user_role"] = 0;
+
+                setcookie("user_id", $user_id, time() + 86400, "/");
+                setcookie("user_email", $email, time() + 86400, "/");
+                setcookie("user_role", 0, time() + 86400, "/");
+
                 $response = ["status" => "success", "message" => "Registration successful"];
             } else {
                 $response["message"] = "Database error: Unable to register";

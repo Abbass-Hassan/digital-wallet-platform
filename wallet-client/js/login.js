@@ -8,6 +8,8 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
         if (response.data && response.data.message) {
           alert(response.data.message);
           if (response.data.status === 'success') {
+            // ✅ Store user ID in localStorage
+            localStorage.setItem('user_id', response.data.user_id);
             window.location.href = '/digital-wallet-platform/wallet-client/dashboard.html';
           }
         } else {
@@ -18,5 +20,4 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
         console.error("Error:", error);
         alert("An error occurred while processing your login.");
       });
-  });
-  
+});

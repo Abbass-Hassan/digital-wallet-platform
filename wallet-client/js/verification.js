@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => {
             alert(response.data.message);
             if (response.data.status === "success") {
-                window.location.href = "/digital-wallet-platform/wallet-client/dashboard.html"; // Redirect to dashboard
+                window.location.href = "/digital-wallet-platform/wallet-client/dashboard.html";
             }
         })
         .catch(error => {
