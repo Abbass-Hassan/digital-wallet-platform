@@ -1,3 +1,4 @@
+/* Global Styles */
 * {
     margin: 0;
     padding: 0;
@@ -16,7 +17,7 @@
 }
 
 /* Containers */
-.login-container, .register-container, .verification-content {
+.login-container, .register-container, .verification-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -95,7 +96,6 @@
     box-shadow: 0 5px 15px rgba(234, 179, 8, 0.4);
 }
 
-
 /* Auth Links */
 .auth-link {
     margin-top: 12px;
@@ -114,6 +114,47 @@
     color: #eab308;
 }
 
+/* Verification Page */
+.verification-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.verification-upload-section {
+    margin-top: 20px;
+}
+
+/* Upload Section */
+.verification-upload-box {
+    display: block;
+    background: #f1f5f9;
+    padding: 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 15px;
+    transition: background 0.3s ease-in-out;
+}
+
+.verification-upload-box:hover {
+    background: #e2e8f0;
+}
+
+/* Guidelines */
+.verification-guidelines {
+    margin-top: 15px;
+    text-align: left;
+}
+
+.verification-guideline {
+    font-size: 0.9rem;
+    color: #475569;
+    margin-bottom: 8px;
+}
 
 /* Dashboard Light Theme */
 .dashboard-body {
@@ -231,21 +272,21 @@
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
 }
 
+.dashboard-widget-text{
+    margin-bottom: 8px;
+}
+
 .dashboard-widget h3 {
     margin-bottom: 10px;
     font-size: 1.2rem;
     color: #1e293b;
 }
 
-.dashboard-widget-text{
-    margin-bottom: 8px;
-}
-
 .dashboard-widget-highlight {
     border: 2px solid #fcd535;
 }
 
-.dashboard-widget-btn {
+.dashboard-widget-btn, .dashboard-action-btn {
     background: linear-gradient(135deg, #fcd535, #eab308);
     border: none;
     padding: 10px 15px;
@@ -256,22 +297,6 @@
 }
 
 .dashboard-widget-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(234, 179, 8, 0.4);
-}
-
-/* Buttons */
-.dashboard-action-btn {
-    background: #fcd535;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease-in-out;
-}
-
-.dashboard-action-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 10px rgba(234, 179, 8, 0.4);
 }
