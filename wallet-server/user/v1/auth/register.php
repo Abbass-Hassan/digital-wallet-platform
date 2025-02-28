@@ -1,7 +1,7 @@
 <?php
-header("Content-Type: application/json"); // Set JSON response header
-require_once __DIR__ . '/../../../connection/db.php'; // Include database connection
-session_start(); // Start session
+header("Content-Type: application/json");
+require_once __DIR__ . '/../../../connection/db.php';
+session_start();
 
 $response = ["status" => "error", "message" => "Something went wrong"];
 
@@ -10,7 +10,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $password = $_POST["password"];
     $confirm_password = $_POST["confirm_password"];
 
-    // 🔍 Validate inputs
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $response["message"] = "Invalid email format";
         echo json_encode($response);
@@ -27,11 +26,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit;
     }
 
-    // 🔐 Hash the password securely
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
     try {
-        // 🚀 Check if the email already exists
         $check_stmt = $conn->prepare("SELECT id FROM users WHERE email = :email");
         $check_stmt->bindParam(':email', $email);
         $check_stmt->execute();
@@ -39,14 +36,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if ($check_stmt->rowCount() > 0) {
             $response["message"] = "Email is already registered";
         } else {
-            // 🚀 Insert new user into database (WITHOUT is_validated)
             $stmt = $conn->prepare("INSERT INTO users (email, password, role) VALUES (:email, :password, 0)");
             $stmt->bindParam(':email', $email);
             $stmt->bindParam(':password', $hashed_password);
 
             if ($stmt->execute()) {
-                $user_id = $conn->lastInsertId(); // Get the last inserted user ID
-                $_SESSION["user_id"] = $user_id; // Store user ID in session
+                $user_id = $conn->lastInsertId();
+                $_SESSION["user_id"] = $user_id;
                 
                 $response = ["status" => "success", "message" => "Registration successful"];
             } else {
@@ -58,6 +54,5 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 
-// ✅ Return JSON response
 echo json_encode($response);
 ?>

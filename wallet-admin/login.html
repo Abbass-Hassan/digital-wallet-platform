@@ -7,20 +7,20 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
-<body>
-  <div class="container">
-    <div class="form-box">
-      <h2>Admin Login</h2>
-      <p class="subtext">Sign in to access the admin panel</p>
+<body class="login-page">
+  <div class="container login-container">
+    <div class="form-box login-form-box">
+      <h2 class="login-title">Admin Login</h2>
+      <p class="subtext login-subtext">Sign in to access the admin panel</p>
 
       <form id="adminLoginForm" method="POST" action="http://localhost/digital-wallet-platform/wallet-server/admin/v1/auth/login.php">
-        <div class="input-group">
-          <input type="email" name="email" id="email" placeholder="Admin Email" required>
+        <div class="input-group login-input-group">
+          <input type="email" name="email" id="email" class="login-input" placeholder="Admin Email" required>
         </div>
-        <div class="input-group">
-          <input type="password" name="password" id="password" placeholder="Password" required>
+        <div class="input-group login-input-group">
+          <input type="password" name="password" id="password" class="login-input" placeholder="Password" required>
         </div>
-        <button type="submit" class="btn">Login</button>
+        <button type="submit" class="btn login-btn">Login</button>
       </form>
     </div>
   </div>

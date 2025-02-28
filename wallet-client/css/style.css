@@ -1,4 +1,3 @@
-/* 🎨 Global Reset */
 * {
     margin: 0;
     padding: 0;
@@ -6,26 +5,26 @@
     font-family: 'Inter', sans-serif;
 }
 
-/* 🏡 Full Page Layout */
-body {
+/* Full Page Layout */
+.login-page, .register-page, .verification-page {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    padding: 2rem;
+    padding: 2rem 0;
     background: #f9fafb;
 }
 
-/* 📦 Form Container (Shared for Login & Register) */
-.container {
+/* Containers */
+.login-container, .register-container, .verification-content {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
 }
 
-/* 📝 Form Box */
-.form-box {
+/* Form Box */
+.login-form-box, .register-form-box, .verification-container {
     background: #ffffff;
     padding: 2.5rem;
     border-radius: 15px;
@@ -36,32 +35,32 @@ body {
     transition: transform 0.3s ease-in-out;
 }
 
-.form-box:hover {
+.login-form-box:hover, .register-form-box:hover, .verification-container:hover {
     transform: translateY(-3px);
 }
 
-/* 🎯 Titles & Subtitles */
-h2 {
+/* Titles & Subtitles */
+.login-title, .register-title, .verification-title {
     font-size: 1.8rem;
     font-weight: 700;
     color: #1e293b;
     margin-bottom: 10px;
 }
 
-.subtext {
+.login-subtext, .register-subtext, .verification-text {
     font-size: 0.95rem;
     color: #6b7280;
     margin-bottom: 20px;
 }
 
-/* ✍️ Input Fields */
-.input-group {
+/* Input Fields */
+.login-input-group, .register-input-group {
     position: relative;
     margin-bottom: 16px;
     text-align: left;
 }
 
-.input-group input {
+.login-input, .register-input, .verification-input {
     width: 100%;
     padding: 15px;
     border: 2px solid #e5e7eb;
@@ -71,33 +70,14 @@ h2 {
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.input-group input:focus {
+.login-input:focus, .register-input:focus, .verification-input:focus {
     border-color: #fcd535;
     outline: none;
     box-shadow: 0 0 8px rgba(252, 213, 53, 0.4);
 }
 
-/* 🚨 Error Message */
-.input-group .error-message {
-    color: red;
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin-top: 6px;
-    min-height: 22px; /* Ensures consistent spacing */
-    text-align: left;
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-}
-
-.input-group.error .error-message {
-    visibility: visible;
-    opacity: 1;
-}
-
-/* 🔘 Buttons */
-.btn {
-    margin-top: 15px;
+/* Buttons */
+.login-btn, .register-btn, .verification-btn {
     background: linear-gradient(135deg, #fcd535, #eab308);
     border: none;
     padding: 15px;
@@ -110,12 +90,13 @@ h2 {
     transition: all 0.3s ease-in-out;
 }
 
-.btn:hover {
+.login-btn:hover, .register-btn:hover, .verification-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(234, 179, 8, 0.4);
 }
 
-/* 🔗 Login/Register Link */
+
+/* Auth Links */
 .auth-link {
     margin-top: 12px;
     font-size: 0.9rem;
@@ -123,84 +104,12 @@ h2 {
 }
 
 .auth-link a {
-    color: #fcd535;
-    text-decoration: none;
+    color: #1e293b;
     font-weight: 600;
+    text-decoration: none;
+    transition: color 0.3s ease-in-out;
 }
 
 .auth-link a:hover {
-    text-decoration: underline;
-}
-
-/* ✅ Fix for Login Page */
-.login-page .form-box {
-    max-width: 420px;
-    padding: 2.5rem;
-    text-align: center;
-}
-
-/* 🛡️ Verification Page Styles */
-.verification-container {
-    background: #ffffff;
-    color: #1e293b;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    max-width: 500px;
-    width: 100%;
-}
-
-.verification-title {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 20px;
-}
-
-.upload-section h2 {
-    font-size: 1.5rem;
-    color: #333;
-    margin-bottom: 10px;
-}
-
-.upload-section p {
-    font-size: 0.95rem;
-    color: #555;
-    margin-bottom: 20px;
-}
-
-.upload-box {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f9fafb;
-    padding: 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    border: 1px solid #ddd;
-    transition: background 0.3s;
-}
-
-.upload-box:hover {
-    background: #eaeaea;
-}
-
-.upload-text {
-    font-size: 1rem;
-    color: #1e293b;
-}
-
-.guidelines {
-    background: #f9fafb;
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 20px;
-    text-align: left;
-    border: 1px solid #ddd;
-}
-
-.guidelines p {
-    font-size: 0.8rem;
-    color: #555;
-    margin-bottom: 8px;
+    color: #eab308;
 }
