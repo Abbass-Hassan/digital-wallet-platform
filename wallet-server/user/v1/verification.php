@@ -42,11 +42,27 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $file_path = $upload_dir . $file_name;
 
     if (move_uploaded_file($file["tmp_name"], $file_path)) {
-        $stmt = $conn->prepare("INSERT INTO verifications (user_id, id_document, is_validated) VALUES (?, ?, 0)");
-        if ($stmt->execute([$user_id, $file_name])) {
-            $response = ["status" => "success", "message" => "Document uploaded successfully. Pending admin approval."];
+        // Check if a verification record already exists for the user
+        $checkStmt = $conn->prepare("SELECT id FROM verifications WHERE user_id = ?");
+        $checkStmt->execute([$user_id]);
+        $existingVerification = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($existingVerification) {
+            // Update the existing verification record
+            $stmt = $conn->prepare("UPDATE verifications SET id_document = ?, is_validated = 0, verification_note = 'Verification resubmitted' WHERE user_id = ?");
+            if ($stmt->execute([$file_name, $user_id])) {
+                $response = ["status" => "success", "message" => "Document updated successfully. Pending admin approval."];
+            } else {
+                $response["message"] = "Database update failed.";
+            }
         } else {
-            $response["message"] = "Database update failed.";
+            // (Fallback) Insert a new verification record if none exists
+            $stmt = $conn->prepare("INSERT INTO verifications (user_id, id_document, is_validated) VALUES (?, ?, 0)");
+            if ($stmt->execute([$user_id, $file_name])) {
+                $response = ["status" => "success", "message" => "Document uploaded successfully. Pending admin approval."];
+            } else {
+                $response["message"] = "Database update failed.";
+            }
         }
     } else {
         $response["message"] = "File upload failed.";

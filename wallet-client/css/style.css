@@ -257,6 +257,29 @@
     box-shadow: 0 5px 10px rgba(234, 179, 8, 0.4);
 }
 
+/* Container for header action buttons */
+.dashboard-header-actions {
+    display: flex;
+    gap: 10px; /* Adjust spacing between buttons */
+}
+
+/* Withdraw Button - similar to deposit button */
+.dashboard-withdraw-btn {
+    background: linear-gradient(135deg, #fcd535, #eab308);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.dashboard-withdraw-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(234, 179, 8, 0.4);
+}
+
+
 /* Widgets */
 .dashboard-widgets {
     display: grid;
@@ -299,6 +322,23 @@
 .dashboard-widget-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 10px rgba(234, 179, 8, 0.4);
+}
+
+/* Verification States */
+
+/* Pending: e.g., orange border */
+.verification-pending {
+    border: 2px solid orange;
+}
+
+/* Approved: e.g., green border */
+.verification-approved {
+    border: 2px solid #4ade80; /* A nice green color */
+}
+
+/* Rejected: e.g., red border */
+.verification-rejected {
+    border: 2px solid #ef4444; /* A bright red color */
 }
 
 

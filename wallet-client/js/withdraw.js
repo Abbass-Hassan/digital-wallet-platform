@@ -12,7 +12,6 @@ document.getElementById('withdrawForm').addEventListener('submit', function(e) {
             if (response.data.error) {
                 alert(response.data.error);
             } else {
-                // Operation successful, redirect to dashboard.html
                 window.location.href = "dashboard.html";
             }
         })

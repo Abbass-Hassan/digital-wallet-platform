@@ -24,6 +24,23 @@
   </aside>
 
   <main class="dashboard-main">
+    <!-- Added Header (Same as Dashboard) -->
+    <header class="dashboard-header">
+      <div class="dashboard-user">
+        <div class="dashboard-user-avatar"></div>
+        <div class="dashboard-user-info">
+          <h2 class="dashboard-user-name">User-30ee7</h2>
+          <p class="dashboard-user-meta">VIP Level: Regular User</p>
+        </div>
+      </div>
+      <div class="dashboard-header-actions">
+        <button class="dashboard-deposit-btn" onclick="window.location.href='deposit.html';">Deposit</button>
+        <button class="dashboard-withdraw-btn" onclick="window.location.href='withdraw.html';">Withdraw</button>
+      </div>
+    </header>
+    <!-- End Added Header -->
+
+    <!-- Withdraw Form Section -->
     <section class="transaction-container">
       <h2 class="transaction-title">Withdraw Funds</h2>
       <form class="transaction-form" id="withdrawForm">
@@ -37,5 +54,6 @@
   </main>
 
   <script src="js/withdraw.js"></script>
+  <script src="js/dashboard.js"></script>
 </body>
 </html>

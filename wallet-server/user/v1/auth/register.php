@@ -49,7 +49,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             if ($stmt->execute()) {
                 $user_id = $conn->lastInsertId(); // Get the new user ID
 
-                // Insert empty values for user_profiles
+                // Extract the portion of the email before the @ to use as the default full_name
+                $fullName = explode('@', $email)[0];
+
+                // Insert default values for user_profiles, using $fullName
                 $profile_stmt = $conn->prepare("
                     INSERT INTO user_profiles (
                         user_id, 
@@ -62,7 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     ) 
                     VALUES (
                         :user_id, 
-                        '', 
+                        :full_name, 
                         NULL, 
                         '', 
                         '', 
@@ -71,6 +74,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     )
                 ");
                 $profile_stmt->bindParam(':user_id', $user_id);
+                $profile_stmt->bindParam(':full_name', $fullName);
                 $profile_stmt->execute();
 
                 // Create a wallet record for the new user with 0 balance

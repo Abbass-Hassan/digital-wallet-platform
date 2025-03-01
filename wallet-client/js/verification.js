@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const formData = new FormData();
         formData.append("id_document", fileInput.files[0]);
 
+        formData.append("referrer", document.referrer);
+
         axios.post("http://localhost/digital-wallet-platform/wallet-server/user/v1/verification.php", formData, {
             headers: { "Content-Type": "multipart/form-data" }
         })
