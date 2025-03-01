@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Internal Transfer</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Axios (if not already included) -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="dashboard-body">
+
+  <!-- Sidebar (same as dashboard) -->
+  <aside class="dashboard-sidebar">
+    <div class="dashboard-sidebar-logo">Wallet</div>
+    <ul class="dashboard-sidebar-links">
+      <li class="dashboard-sidebar-item"><a href="dashboard.html">Dashboard</a></li>
+      <li class="dashboard-sidebar-item"><a href="transfer.html">Transfer</a></li>
+      <li class="dashboard-sidebar-item">Orders</li>
+      <li class="dashboard-sidebar-item">Rewards Hub</li>
+      <li class="dashboard-sidebar-item">Referral</li>
+      <li class="dashboard-sidebar-item"><a href="profile.html">Account</a></li>
+      <li class="dashboard-sidebar-item">Settings</li>
+      <li class="dashboard-sidebar-item">
+        <a href="/digital-wallet-platform/wallet-server/user/v1/auth/logout.php">Logout</a>
+      </li>
+    </ul>
+  </aside>
+
+  <main class="dashboard-main">
+    <!-- Header (same as dashboard) -->
+    <header class="dashboard-header">
+      <div class="dashboard-user">
+        <div class="dashboard-user-avatar"></div>
+        <div class="dashboard-user-info">
+          <h2 class="dashboard-user-name">User-30ee7</h2>
+          <p class="dashboard-user-meta">VIP Level: Regular User</p>
+        </div>
+      </div>
+      <div class="dashboard-header-actions">
+        <button class="dashboard-deposit-btn" onclick="window.location.href='deposit.html';">Deposit</button>
+        <button class="dashboard-withdraw-btn" onclick="window.location.href='withdraw.html';">Withdraw</button>
+      </div>
+    </header>
+
+    <!-- Transfer Section -->
+    <section class="transaction-container">
+      <h2 class="transaction-title">Internal Transfer</h2>
+
+      <div class="transaction-form">
+        <!-- Recipient Search (Input Only) -->
+        <div class="transaction-field">
+          <label for="recipientQuery" class="transaction-label">Recipient (Email)</label>
+          <input 
+            type="text" 
+            id="recipientQuery" 
+            class="transaction-input" 
+            placeholder="Enter recipient email" 
+            required
+          >
+        </div>
+
+        <!-- Optional results area -->
+        <div id="searchResults" style="margin: 10px 0; color: #333;"></div>
+
+        <!-- Transfer Amount -->
+        <div class="transaction-field">
+          <label for="transferAmount" class="transaction-label">Transfer Amount (USDT)</label>
+          <input 
+            type="number" 
+            id="transferAmount" 
+            class="transaction-input" 
+            step="0.01" 
+            min="0" 
+            required
+          >
+        </div>
+        
+        <button id="transferBtn" class="transaction-btn">Transfer Now</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Transfer Logic JS -->
+  <script src="js/transfer.js"></script>
+</body>
+</html>

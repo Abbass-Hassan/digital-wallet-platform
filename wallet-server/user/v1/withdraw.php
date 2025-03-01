@@ -12,12 +12,11 @@ if (!isset($_SESSION['user_id'])) {
 $userId = $_SESSION['user_id'];
 
 try {
-    // Check verification table instead of users
+    // Check verification status
     $verifyStmt = $conn->prepare("SELECT is_validated FROM verifications WHERE user_id = :user_id LIMIT 1");
     $verifyStmt->execute(['user_id' => $userId]);
     $verification = $verifyStmt->fetch(PDO::FETCH_ASSOC);
 
-    // If no verification record OR not validated, deny withdrawal
     if (!$verification || $verification['is_validated'] != 1) {
         echo json_encode(['error' => 'Your account is not verified. You cannot withdraw.']);
         exit;
@@ -54,6 +53,13 @@ try {
     $newBalance = $wallet['balance'] - $amount;
     $stmt = $conn->prepare("UPDATE wallets SET balance = :balance WHERE user_id = :user_id");
     $stmt->execute(['balance' => $newBalance, 'user_id' => $userId]);
+
+    // Insert a record into transactions table
+    $transStmt = $conn->prepare("
+        INSERT INTO transactions (sender_id, recipient_id, amount, transaction_type)
+        VALUES (:user_id, NULL, :amount, 'withdrawal')
+    ");
+    $transStmt->execute(['user_id' => $userId, 'amount' => $amount]);
 
     echo json_encode(['newBalance' => $newBalance, 'message' => 'Withdrawal successful']);
 } catch (PDOException $e) {
