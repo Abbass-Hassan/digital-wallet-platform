@@ -497,3 +497,112 @@
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(234, 179, 8, 0.4);
 }
+
+
+/* Transaction History Page Enhancements */
+.transaction-history {
+    max-width: 900px; /* Make it a bit wider for the table */
+  }
+  
+  /* Filter Section Container */
+  .transaction-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 20px;
+    align-items: flex-end;
+  }
+  
+  /* Each filter field (date/type) */
+  .filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  /* Filter labels */
+  .filter-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  /* Filter inputs (date) */
+  .filter-input {
+    padding: 8px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: #f9fafb;
+    transition: border-color 0.3s;
+  }
+  
+  /* Filter selects (type) */
+  .filter-select {
+    padding: 8px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: #f9fafb;
+    cursor: pointer;
+    transition: border-color 0.3s;
+  }
+  
+  /* Hover/focus states for filter inputs/selects */
+  .filter-input:focus,
+  .filter-select:focus {
+    border-color: #fcd535;
+    outline: none;
+    box-shadow: 0 0 6px rgba(252, 213, 53, 0.3);
+  }
+  
+  /* Optional: make the filter button a bit smaller to fit the row better */
+  .filter-btn {
+    padding: 10px 20px;
+    font-size: 1rem;
+    margin-top: auto; /* aligns the button with the bottom of the fields */
+  }
+  
+  /* Transactions Table Styles */
+  .transactions-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden; /* ensures the radius is respected for table edges */
+  }
+  
+  /* Table Header */
+  .transactions-table thead {
+    background-color: #fcd535;
+    color: #1e293b;
+  }
+  
+  .transactions-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-bottom: 2px solid #e5e7eb;
+  }
+  
+  /* Table Body */
+  .transactions-table td {
+    padding: 12px;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  /* Hover effect on rows */
+  .transactions-table tbody tr:hover {
+    background-color: #f9fafb;
+  }
+  
+  /* For the "No transactions found" or error messages */
+  .transactions-list p {
+    font-size: 0.95rem;
+    color: #555;
+    margin-top: 10px;
+  }
+  

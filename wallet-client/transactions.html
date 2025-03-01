@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Internal Transfer</title>
-  <link rel="stylesheet" href="css/style.css">
-  <!-- Axios (if not already included) -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Transaction History</title>
+  <link rel="stylesheet" href="css/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body class="dashboard-body">
 
-  <!-- Sidebar (same as dashboard) -->
+  <!-- Sidebar -->
   <aside class="dashboard-sidebar">
     <div class="dashboard-sidebar-logo">Wallet</div>
     <ul class="dashboard-sidebar-links">
@@ -28,8 +27,9 @@
 </aside>
 
 
+  <!-- Main Content -->
   <main class="dashboard-main">
-    <!-- Header (same as dashboard) -->
+    <!-- Header -->
     <header class="dashboard-header">
       <div class="dashboard-user">
         <div class="dashboard-user-avatar"></div>
@@ -44,45 +44,40 @@
       </div>
     </header>
 
-    <!-- Transfer Section -->
-    <section class="transaction-container">
-      <h2 class="transaction-title">Internal Transfer</h2>
+    <!-- Transaction History Section -->
+    <section class="transaction-container transaction-history">
+      <h2 class="transaction-title">Transaction History</h2>
 
-      <div class="transaction-form">
-        <!-- Recipient Search (Input Only) -->
-        <div class="transaction-field">
-          <label for="recipientQuery" class="transaction-label">Recipient (Email)</label>
-          <input 
-            type="text" 
-            id="recipientQuery" 
-            class="transaction-input" 
-            placeholder="Enter recipient email" 
-            required
-          >
+      <!-- Filter Section -->
+      <div class="transaction-filters">
+        <!-- Single Date Filter -->
+        <div class="filter-field">
+          <label for="filterDate" class="filter-label">Date</label>
+          <input type="date" id="filterDate" class="filter-input" />
         </div>
 
-        <!-- Optional results area -->
-        <div id="searchResults" style="margin: 10px 0; color: #333;"></div>
-
-        <!-- Transfer Amount -->
-        <div class="transaction-field">
-          <label for="transferAmount" class="transaction-label">Transfer Amount (USDT)</label>
-          <input 
-            type="number" 
-            id="transferAmount" 
-            class="transaction-input" 
-            step="0.01" 
-            min="0" 
-            required
-          >
+        <!-- Type Filter -->
+        <div class="filter-field">
+          <label for="typeSelect" class="filter-label">Type</label>
+          <select id="typeSelect" class="filter-select">
+            <option value="">All</option>
+            <option value="deposit">Deposit</option>
+            <option value="withdrawal">Withdrawal</option>
+            <option value="transfer">Transfer</option>
+          </select>
         </div>
-        
-        <button id="transferBtn" class="transaction-btn">Transfer Now</button>
+
+        <button id="filterBtn" class="transaction-btn filter-btn">Filter</button>
       </div>
+
+      <!-- Transaction List Display -->
+      <div id="transactionsList" class="transactions-list"></div>
     </section>
   </main>
 
-  <!-- Transfer Logic JS -->
-  <script src="js/transfer.js"></script>
+  <!-- (Optional) dashboard.js for user info, etc. -->
+  <script src="js/dashboard.js"></script>
+  <!-- transactions.js for filter & fetching logic -->
+  <script src="js/transactions.js"></script>
 </body>
 </html>
