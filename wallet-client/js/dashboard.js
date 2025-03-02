@@ -102,37 +102,55 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 4. Fetch and display the user's transaction limits usage
-    const dailyUsedElem     = document.getElementById('dailyUsed');
-    const dailyLimitElem    = document.getElementById('dailyLimit');
-    const dailyRemainingElem= document.getElementById('dailyRemaining');
-    const weeklyUsedElem    = document.getElementById('weeklyUsed');
-    const weeklyLimitElem   = document.getElementById('weeklyLimit');
-    const weeklyRemainingElem = document.getElementById('weeklyRemaining');
-    const monthlyUsedElem   = document.getElementById('monthlyUsed');
-    const monthlyLimitElem  = document.getElementById('monthlyLimit');
-    const monthlyRemainingElem = document.getElementById('monthlyRemaining');
+    // Elements for numeric usage/limits
+    const dailyInfo          = document.getElementById('dailyInfo');
+    const weeklyInfo         = document.getElementById('weeklyInfo');
+    const monthlyInfo        = document.getElementById('monthlyInfo');
+    // Elements for the progress bars
+    const dailyBar           = document.getElementById('dailyBar');
+    const weeklyBar          = document.getElementById('weeklyBar');
+    const monthlyBar         = document.getElementById('monthlyBar');
+
+    // Helper function to update progress bar & text
+    function updateProgressBar(used, limit, barElem, infoElem) {
+        const ratio = limit > 0 ? (used / limit) : 0;
+        const percent = Math.min(ratio * 100, 100);  // cap at 100%
+        
+        // Set bar width
+        barElem.style.width = percent.toFixed(2) + '%';
+
+        // Set numeric text, e.g. "50.00 / 200.00"
+        infoElem.textContent = used.toFixed(2) + ' / ' + limit.toFixed(2);
+    }
 
     axios.get('/digital-wallet-platform/wallet-server/user/v1/get_limits_usage.php')
         .then(response => {
             if (response.data.error) {
-                dailyUsedElem.textContent = 'Error';
-                weeklyUsedElem.textContent = 'Error';
-                monthlyUsedElem.textContent = 'Error';
+                dailyInfo.textContent   = 'Error';
+                weeklyInfo.textContent  = 'Error';
+                monthlyInfo.textContent = 'Error';
             } else {
-                dailyUsedElem.textContent = response.data.dailyUsed.toFixed(2) + ' USDT';
-                dailyLimitElem.textContent = response.data.dailyLimit.toFixed(2) + ' USDT';
-                dailyRemainingElem.textContent = response.data.dailyRemaining.toFixed(2) + ' USDT';
+                const dailyUsed    = response.data.dailyUsed;
+                const dailyLimit   = response.data.dailyLimit;
+                const weeklyUsed   = response.data.weeklyUsed;
+                const weeklyLimit  = response.data.weeklyLimit;
+                const monthlyUsed  = response.data.monthlyUsed;
+                const monthlyLimit = response.data.monthlyLimit;
 
-                weeklyUsedElem.textContent = response.data.weeklyUsed.toFixed(2) + ' USDT';
-                weeklyLimitElem.textContent = response.data.weeklyLimit.toFixed(2) + ' USDT';
-                weeklyRemainingElem.textContent = response.data.weeklyRemaining.toFixed(2) + ' USDT';
+                // Update daily row
+                updateProgressBar(dailyUsed, dailyLimit, dailyBar, dailyInfo);
 
-                monthlyUsedElem.textContent = response.data.monthlyUsed.toFixed(2) + ' USDT';
-                monthlyLimitElem.textContent = response.data.monthlyLimit.toFixed(2) + ' USDT';
-                monthlyRemainingElem.textContent = response.data.monthlyRemaining.toFixed(2) + ' USDT';
+                // Update weekly row
+                updateProgressBar(weeklyUsed, weeklyLimit, weeklyBar, weeklyInfo);
+
+                // Update monthly row
+                updateProgressBar(monthlyUsed, monthlyLimit, monthlyBar, monthlyInfo);
             }
         })
         .catch(error => {
             console.error("Error fetching limits usage:", error);
+            dailyInfo.textContent   = 'Error';
+            weeklyInfo.textContent  = 'Error';
+            monthlyInfo.textContent = 'Error';
         });
 });

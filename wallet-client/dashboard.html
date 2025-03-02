@@ -46,57 +46,62 @@
 
     <!-- Widgets Section -->
     <section class="dashboard-widgets">
-      <!-- Verification Widget -->
-      <div class="dashboard-widget" id="verificationWidget">
-        <h3 class="dashboard-widget-title" id="verificationTitle">Loading...</h3>
-        <p class="dashboard-widget-text" id="verificationMessage"></p>
-        <button class="dashboard-widget-btn" id="verificationButton" style="display: none;">Verify Now</button>
+      <!-- Top Row: Two widgets side by side -->
+      <div class="widget-row">
+        <!-- Verification Widget (50% width) -->
+        <div class="dashboard-widget half-width" id="verificationWidget">
+          <h3 class="dashboard-widget-title" id="verificationTitle">Loading...</h3>
+          <p class="dashboard-widget-text" id="verificationMessage"></p>
+          <button class="dashboard-widget-btn" id="verificationButton" style="display: none;">Verify Now</button>
+        </div>
+
+        <!-- Balance Widget (50% width) -->
+        <div class="dashboard-widget half-width" id="balanceWidget">
+          <h3 class="dashboard-widget-title">Your Balance</h3>
+          <p class="dashboard-widget-text">
+            <span id="balanceAmount">Loading...</span>
+          </p>
+        </div>
       </div>
-      
-      <!-- Balance Widget -->
-      <div class="dashboard-widget" id="balanceWidget">
-        <h3 class="dashboard-widget-title">Your Balance</h3>
-        <p class="dashboard-widget-text">
-          <span id="balanceAmount">Loading...</span>
-        </p>
-      </div>
-      
-      <!-- Limits Widget -->
-      <div class="dashboard-widget" id="limitsWidget">
-        <h3 class="dashboard-widget-title">Withdrawal & Transfer Limits</h3>
-        <p class="dashboard-widget-text">
-          Deposits are unlimited, but withdrawals and transfers are subject to limits.
-        </p>
-        <table class="limits-table">
-          <thead>
-            <tr>
-              <th>Period</th>
-              <th>Used</th>
-              <th>Limit</th>
-              <th>Remaining</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Daily</td>
-              <td id="dailyUsed">Loading...</td>
-              <td id="dailyLimit">Loading...</td>
-              <td id="dailyRemaining">Loading...</td>
-            </tr>
-            <tr>
-              <td>Weekly</td>
-              <td id="weeklyUsed">Loading...</td>
-              <td id="weeklyLimit">Loading...</td>
-              <td id="weeklyRemaining">Loading...</td>
-            </tr>
-            <tr>
-              <td>Monthly</td>
-              <td id="monthlyUsed">Loading...</td>
-              <td id="monthlyLimit">Loading...</td>
-              <td id="monthlyRemaining">Loading...</td>
-            </tr>
-          </tbody>
-        </table>
+
+      <!-- Second Row: Limits widget at 100% width -->
+      <div class="widget-row">
+        <div class="dashboard-widget full-width" id="limitsWidget">
+          <h3 class="dashboard-widget-title">Withdrawal & Transfer Limits</h3>
+          <p class="dashboard-widget-text">
+            Deposits are unlimited, but withdrawals and transfers are subject to limits.
+          </p>
+
+          <!-- "Task-list" style progress bars for Daily, Weekly, Monthly usage -->
+          <div class="limits-progress-list">
+            <!-- Daily Row -->
+            <div class="limits-progress-item">
+              <div class="limits-progress-label">Daily</div>
+              <div class="limits-progress-bar-container">
+                <div class="limits-progress-bar" id="dailyBar"></div>
+              </div>
+              <div class="limits-progress-info" id="dailyInfo">0 / 0</div>
+            </div>
+
+            <!-- Weekly Row -->
+            <div class="limits-progress-item">
+              <div class="limits-progress-label">Weekly</div>
+              <div class="limits-progress-bar-container">
+                <div class="limits-progress-bar" id="weeklyBar"></div>
+              </div>
+              <div class="limits-progress-info" id="weeklyInfo">0 / 0</div>
+            </div>
+
+            <!-- Monthly Row -->
+            <div class="limits-progress-item">
+              <div class="limits-progress-label">Monthly</div>
+              <div class="limits-progress-bar-container">
+                <div class="limits-progress-bar" id="monthlyBar"></div>
+              </div>
+              <div class="limits-progress-info" id="monthlyInfo">0 / 0</div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
     
