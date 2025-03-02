@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     response.data.data.forEach(request => {
                         const row = document.createElement("tr");
-
                         row.innerHTML = `
                             <td>${request.email}</td>
                             <td><a href="/digital-wallet-platform/wallet-server/uploads/${request.id_document}" target="_blank">View ID</a></td>
@@ -18,7 +17,6 @@ document.addEventListener("DOMContentLoaded", function () {
                                 <button class="reject-btn" data-user-id="${request.user_id}">Reject</button>
                             </td>
                         `;
-
                         tableBody.appendChild(row);
                     });
 
@@ -56,14 +54,20 @@ document.addEventListener("DOMContentLoaded", function () {
         axios.post("http://localhost/digital-wallet-platform/wallet-server/admin/v1/update_verification.php", {
             user_id: user_id,
             is_validated: is_validated
-        }, { headers: { "Content-Type": "application/json" } })
+        }, {
+            headers: { "Content-Type": "application/json" }
+        })
         .then(response => {
-            if (response.data && response.data.message) {
-                alert(response.data.message);
+            const data = response.data;
+
+            if (data && data.message) {
+                alert(data.message);
             } else {
                 alert("Unexpected response from server.");
             }
-            fetchRequests(); // Refresh table after update
+
+            // Refresh the table after the update
+            fetchRequests();
         })
         .catch(error => {
             console.error("Error updating verification status:", error);
@@ -71,5 +75,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    fetchRequests(); // Load requests on page load
+    // Initial load
+    fetchRequests();
 });

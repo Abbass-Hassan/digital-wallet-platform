@@ -19,7 +19,7 @@ class MailService
 
         $this->mailer = new PHPMailer(true);
 
-        $this->mailer->SMTPDebug = 2;
+        $this->mailer->SMTPDebug = 0;
         try {
             //Server settings
             $this->mailer->isSMTP();

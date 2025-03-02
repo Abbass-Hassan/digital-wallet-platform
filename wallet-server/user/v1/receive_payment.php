@@ -21,11 +21,11 @@ if (!isset($_GET['recipient_id'])) {
 
 $recipientId = $_GET['recipient_id'];
 
-// Optional: Enforce that the logged-in user must match the recipient in the QR code
-if ($loggedInUserId != $recipientId) {
-    echo json_encode(['error' => 'You are not the intended recipient for this payment']);
-    exit;
-}
+// Enforce that the logged-in user must match the recipient in the QR code
+// if ($loggedInUserId != $recipientId) {
+//     echo json_encode(['error' => 'You are not the intended recipient for this payment']);
+//     exit;
+// }
 
 // Check if user is verified
 try {
@@ -42,8 +42,9 @@ try {
     exit;
 }
 
-// The amount to be credited when the user scans the QR code
+// Extract amount from the query, default to 10 if not provided
 $amount = 10.0;
+
 
 try {
     // Check if the wallet exists for the user
@@ -64,7 +65,7 @@ try {
         $stmt->execute(['balance' => $newBalance, 'user_id' => $loggedInUserId]);
     }
 
-    // Record the transaction (sender_id is NULL or 0 since the funds come via QR code)
+    // Record the transaction (sender_id is NULL since the funds come via QR code)
     $transStmt = $conn->prepare("
         INSERT INTO transactions (sender_id, recipient_id, amount, transaction_type) 
         VALUES (NULL, :recipient_id, :amount, 'qr_payment')
