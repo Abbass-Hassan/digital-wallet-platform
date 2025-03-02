@@ -56,6 +56,26 @@ try {
     $transStmt = $conn->prepare("INSERT INTO transactions (sender_id, recipient_id, amount, transaction_type) VALUES (NULL, :user_id, :amount, 'deposit')");
     $transStmt->execute(['user_id' => $userId, 'amount' => $amount]);
 
+    // Fetch user's email from users table for confirmation
+    $emailStmt = $conn->prepare("SELECT email FROM users WHERE id = :user_id LIMIT 1");
+    $emailStmt->execute(['user_id' => $userId]);
+    $userData = $emailStmt->fetch(PDO::FETCH_ASSOC);
+    $userEmail = $userData ? $userData['email'] : null;
+
+    // Send deposit confirmation email if email exists
+    echo($userEmail);
+    if ($userEmail) {
+        require_once __DIR__ . '/../../utils/MailService.php';
+        $mailer = new MailService();
+        $subject = "Deposit Confirmation";
+        $body = "
+            <h1>Deposit Successful</h1>
+            <p>You have deposited <strong>{$amount} USDT</strong> into your wallet.</p>
+            <p>Your new balance is: <strong>{$newBalance} USDT</strong></p>
+        ";
+        $mailer->sendMail($userEmail, $subject, $body);
+    }
+
     echo json_encode(['newBalance' => $newBalance, 'message' => 'Deposit successful']);
 } catch (PDOException $e) {
     echo json_encode(['error' => $e->getMessage()]);

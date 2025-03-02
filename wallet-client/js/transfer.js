@@ -28,8 +28,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (response.data.error) {
                     alert(response.data.error);
                 } else {
-                    alert(response.data.message);
-                    // Optionally refresh the dashboard or redirect.
                     window.location.href = 'dashboard.html';
                 }
             })

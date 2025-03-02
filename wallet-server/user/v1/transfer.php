@@ -137,8 +137,46 @@ try {
     ]);
 
     $conn->commit();
+    
     // Calculate new sender balance (deducted)
     $newBalance = floatval($sender_wallet['balance']) - $amount;
+    
+    // Send email confirmations
+    // Fetch sender email and recipient email from users table.
+    $senderStmt = $conn->prepare("SELECT email FROM users WHERE id = :user_id LIMIT 1");
+    $senderStmt->execute(['user_id' => $sender_id]);
+    $senderData = $senderStmt->fetch(PDO::FETCH_ASSOC);
+    $senderEmail = $senderData ? $senderData['email'] : null;
+
+    $recipientStmt = $conn->prepare("SELECT email FROM users WHERE id = :user_id LIMIT 1");
+    $recipientStmt->execute(['user_id' => $recipient_id]);
+    $recipientData = $recipientStmt->fetch(PDO::FETCH_ASSOC);
+    $recipientEmail = $recipientData ? $recipientData['email'] : null;
+
+    require_once __DIR__ . '/../../utils/MailService.php';
+    $mailer = new MailService();
+
+    // Email to sender
+    if ($senderEmail) {
+        $subjectSender = "Transfer Confirmation";
+        $bodySender = "
+            <h1>Transfer Successful</h1>
+            <p>You have transferred <strong>{$amount} USDT</strong> to <strong>{$recipientEmail}</strong>.</p>
+            <p>Your new balance is: <strong>{$newBalance} USDT</strong></p>
+        ";
+        $mailer->sendMail($senderEmail, $subjectSender, $bodySender);
+    }
+
+    // Email to recipient
+    if ($recipientEmail) {
+        $subjectRecipient = "Funds Received";
+        $bodyRecipient = "
+            <h1>You've Received Funds</h1>
+            <p>You have received <strong>{$amount} USDT</strong> from <strong>{$senderEmail}</strong>.</p>
+        ";
+        $mailer->sendMail($recipientEmail, $subjectRecipient, $bodyRecipient);
+    }
+    
     echo json_encode(["message" => "Transfer successful.", "new_balance" => $newBalance]);
 } catch (PDOException $e) {
     $conn->rollBack();

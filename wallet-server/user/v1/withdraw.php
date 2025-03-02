@@ -16,7 +16,6 @@ try {
     $verifyStmt = $conn->prepare("SELECT is_validated FROM verifications WHERE user_id = :user_id LIMIT 1");
     $verifyStmt->execute(['user_id' => $userId]);
     $verification = $verifyStmt->fetch(PDO::FETCH_ASSOC);
-
     if (!$verification || $verification['is_validated'] != 1) {
         echo json_encode(['error' => 'Your account is not verified. You cannot withdraw.']);
         exit;
@@ -59,7 +58,7 @@ try {
     exit;
 }
 
-// Calculate current totals for withdrawals & transfers where the user is sender
+// Calculate current totals for withdrawals & transfers (outgoing) where the user is sender
 try {
     // Daily total
     $dailyStmt = $conn->prepare("SELECT COALESCE(SUM(amount),0) AS total FROM transactions WHERE sender_id = :user_id AND DATE(created_at) = CURDATE() AND transaction_type IN ('withdrawal','transfer')");
@@ -99,12 +98,10 @@ try {
     $stmt = $conn->prepare("SELECT balance FROM wallets WHERE user_id = :user_id");
     $stmt->execute(['user_id' => $userId]);
     $wallet = $stmt->fetch(PDO::FETCH_ASSOC);
-
     if (!$wallet) {
         echo json_encode(['error' => 'Wallet not found']);
         exit;
     }
-
     if (floatval($wallet['balance']) < $amount) {
         echo json_encode(['error' => 'Insufficient funds']);
         exit;
@@ -117,6 +114,25 @@ try {
     // Insert transaction record for withdrawal (recipient_id is NULL)
     $transStmt = $conn->prepare("INSERT INTO transactions (sender_id, recipient_id, amount, transaction_type) VALUES (:user_id, NULL, :amount, 'withdrawal')");
     $transStmt->execute(['user_id' => $userId, 'amount' => $amount]);
+
+    // Fetch user's email for confirmation
+    $emailStmt = $conn->prepare("SELECT email FROM users WHERE id = :user_id LIMIT 1");
+    $emailStmt->execute(['user_id' => $userId]);
+    $userData = $emailStmt->fetch(PDO::FETCH_ASSOC);
+    $userEmail = $userData ? $userData['email'] : null;
+
+    // Send email confirmation if email is available
+    if ($userEmail) {
+        require_once __DIR__ . '/../../utils/MailService.php';
+        $mailer = new MailService();
+        $subject = "Withdrawal Confirmation";
+        $body = "
+            <h1>Withdrawal Successful</h1>
+            <p>You have withdrawn <strong>{$amount} USDT</strong> from your wallet.</p>
+            <p>Your new balance is: <strong>{$newBalance} USDT</strong></p>
+        ";
+        $mailer->sendMail($userEmail, $subject, $body);
+    }
 
     echo json_encode(['newBalance' => $newBalance, 'message' => 'Withdrawal successful']);
 } catch (PDOException $e) {
