@@ -56,6 +56,66 @@ if (!$sender_wallet || floatval($sender_wallet['balance']) < $amount) {
     exit;
 }
 
+// Fetch sender's tier
+try {
+    $userStmt = $conn->prepare("SELECT tier FROM users WHERE id = :user_id LIMIT 1");
+    $userStmt->execute(['user_id' => $sender_id]);
+    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+    $tier = $user ? $user['tier'] : 'regular';
+} catch (PDOException $e) {
+    echo json_encode(["error" => $e->getMessage()]);
+    exit;
+}
+
+// Fetch limits for this tier
+try {
+    $limitStmt = $conn->prepare("SELECT daily_limit, weekly_limit, monthly_limit FROM transaction_limits WHERE tier = :tier LIMIT 1");
+    $limitStmt->execute(['tier' => $tier]);
+    $limits = $limitStmt->fetch(PDO::FETCH_ASSOC);
+    if (!$limits) {
+        echo json_encode(["error" => "Transaction limits not defined for your tier"]);
+        exit;
+    }
+} catch (PDOException $e) {
+    echo json_encode(["error" => $e->getMessage()]);
+    exit;
+}
+
+// Calculate current totals for withdrawals & transfers (outgoing) where the user is sender
+try {
+    // Daily total
+    $dailyStmt = $conn->prepare("SELECT COALESCE(SUM(amount),0) AS total FROM transactions WHERE sender_id = :user_id AND DATE(created_at) = CURDATE() AND transaction_type IN ('withdrawal','transfer')");
+    $dailyStmt->execute(['user_id' => $sender_id]);
+    $dailyTotal = floatval($dailyStmt->fetch(PDO::FETCH_ASSOC)['total']);
+
+    // Weekly total
+    $weeklyStmt = $conn->prepare("SELECT COALESCE(SUM(amount),0) AS total FROM transactions WHERE sender_id = :user_id AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1) AND transaction_type IN ('withdrawal','transfer')");
+    $weeklyStmt->execute(['user_id' => $sender_id]);
+    $weeklyTotal = floatval($weeklyStmt->fetch(PDO::FETCH_ASSOC)['total']);
+
+    // Monthly total
+    $monthlyStmt = $conn->prepare("SELECT COALESCE(SUM(amount),0) AS total FROM transactions WHERE sender_id = :user_id AND MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE()) AND transaction_type IN ('withdrawal','transfer')");
+    $monthlyStmt->execute(['user_id' => $sender_id]);
+    $monthlyTotal = floatval($monthlyStmt->fetch(PDO::FETCH_ASSOC)['total']);
+} catch (PDOException $e) {
+    echo json_encode(["error" => $e->getMessage()]);
+    exit;
+}
+
+// Check limits: For transfers, we apply limits like withdrawals.
+if (($dailyTotal + $amount) > floatval($limits['daily_limit'])) {
+    echo json_encode(["error" => "Daily transfer/withdrawal limit exceeded"]);
+    exit;
+}
+if (($weeklyTotal + $amount) > floatval($limits['weekly_limit'])) {
+    echo json_encode(["error" => "Weekly transfer/withdrawal limit exceeded"]);
+    exit;
+}
+if (($monthlyTotal + $amount) > floatval($limits['monthly_limit'])) {
+    echo json_encode(["error" => "Monthly transfer/withdrawal limit exceeded"]);
+    exit;
+}
+
 // Begin a database transaction to ensure atomic updates.
 $conn->beginTransaction();
 
@@ -77,7 +137,9 @@ try {
     ]);
 
     $conn->commit();
-    echo json_encode(["message" => "Transfer successful.", "new_balance" => floatval($sender_wallet['balance']) - $amount]);
+    // Calculate new sender balance (deducted)
+    $newBalance = floatval($sender_wallet['balance']) - $amount;
+    echo json_encode(["message" => "Transfer successful.", "new_balance" => $newBalance]);
 } catch (PDOException $e) {
     $conn->rollBack();
     echo json_encode(["error" => "Transfer failed: " . $e->getMessage()]);

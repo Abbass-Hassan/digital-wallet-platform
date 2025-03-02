@@ -2,13 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Dashboard</title>
   <link rel="stylesheet" href="css/style.css">
+  <!-- Axios (if not already included) -->
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body class="dashboard-body">
 
+  <!-- Sidebar -->
   <aside class="dashboard-sidebar">
     <div class="dashboard-sidebar-logo">Wallet</div>
     <ul class="dashboard-sidebar-links">
@@ -23,11 +25,11 @@
         <a href="/digital-wallet-platform/wallet-server/user/v1/auth/logout.php">Logout</a>
       </li>
     </ul>
-</aside>
+  </aside>
 
-
-
+  <!-- Main Content -->
   <main class="dashboard-main">
+    <!-- Header -->
     <header class="dashboard-header">
       <div class="dashboard-user">
         <div class="dashboard-user-avatar"></div>
@@ -42,18 +44,59 @@
       </div>
     </header>
 
+    <!-- Widgets Section -->
     <section class="dashboard-widgets">
+      <!-- Verification Widget -->
       <div class="dashboard-widget" id="verificationWidget">
         <h3 class="dashboard-widget-title" id="verificationTitle">Loading...</h3>
         <p class="dashboard-widget-text" id="verificationMessage"></p>
         <button class="dashboard-widget-btn" id="verificationButton" style="display: none;">Verify Now</button>
       </div>
-    
+      
+      <!-- Balance Widget -->
       <div class="dashboard-widget" id="balanceWidget">
         <h3 class="dashboard-widget-title">Your Balance</h3>
         <p class="dashboard-widget-text">
           <span id="balanceAmount">Loading...</span>
         </p>
+      </div>
+      
+      <!-- Limits Widget -->
+      <div class="dashboard-widget" id="limitsWidget">
+        <h3 class="dashboard-widget-title">Withdrawal & Transfer Limits</h3>
+        <p class="dashboard-widget-text">
+          Deposits are unlimited, but withdrawals and transfers are subject to limits.
+        </p>
+        <table class="limits-table">
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>Used</th>
+              <th>Limit</th>
+              <th>Remaining</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Daily</td>
+              <td id="dailyUsed">Loading...</td>
+              <td id="dailyLimit">Loading...</td>
+              <td id="dailyRemaining">Loading...</td>
+            </tr>
+            <tr>
+              <td>Weekly</td>
+              <td id="weeklyUsed">Loading...</td>
+              <td id="weeklyLimit">Loading...</td>
+              <td id="weeklyRemaining">Loading...</td>
+            </tr>
+            <tr>
+              <td>Monthly</td>
+              <td id="monthlyUsed">Loading...</td>
+              <td id="monthlyLimit">Loading...</td>
+              <td id="monthlyRemaining">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
     

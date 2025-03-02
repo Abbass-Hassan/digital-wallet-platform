@@ -341,6 +341,55 @@
     border: 2px solid #ef4444; /* A bright red color */
 }
 
+  /* Limits Widget Container */
+  #limitsWidget {
+    margin-top: 20px;
+  }
+  
+  /* Limits Table */
+  .limits-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden; /* Ensures rounded corners */
+  }
+  
+  /* Table Header Styling */
+  .limits-table thead {
+    background-color: #fcd535;
+    color: #1e293b;
+  }
+  
+  .limits-table th {
+    padding: 12px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-bottom: 2px solid #e5e7eb;
+  }
+  
+  /* Table Body Styling */
+  .limits-table td {
+    padding: 12px;
+    font-size: 0.95rem;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  /* Row Hover Effect */
+  .limits-table tbody tr:hover {
+    background-color: #f9fafb;
+  }
+  
+  /* Limits Widget Text Styling */
+  #limitsWidget .dashboard-widget-text {
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    color: #555;
+  }
+  
 
 
 /* Profile Page */
@@ -606,3 +655,5 @@
     margin-top: 10px;
   }
   
+
+

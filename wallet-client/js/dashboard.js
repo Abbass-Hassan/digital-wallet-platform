@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // 1. Fetch and display the user's name in the header
     const userNameElem = document.querySelector('.dashboard-user-name');
 
     axios.get('/digital-wallet-platform/wallet-server/user/v1/get_profile.php')
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
             userNameElem.textContent = "Error Loading Name";
         });
 
+    // 2. Verification widget logic
     const verificationWidget  = document.getElementById('verificationWidget');
     const verificationTitle   = document.getElementById('verificationTitle');
     const verificationMessage = document.getElementById('verificationMessage');
@@ -28,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
     axios.get('/digital-wallet-platform/wallet-server/user/v1/get_verification_status.php')
         .then(response => {
             if (response.data.error) {
-                verificationTitle.textContent   = 'Error';
+                verificationTitle.textContent = 'Error';
                 verificationMessage.textContent = response.data.error;
                 return;
             }
@@ -77,10 +79,11 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error fetching verification status:', error);
-            verificationTitle.textContent   = 'Error';
+            verificationTitle.textContent = 'Error';
             verificationMessage.textContent = 'Unable to load verification status.';
         });
 
+    // 3. Fetch and display the user's wallet balance
     const balanceAmountElem = document.getElementById('balanceAmount');
     if (balanceAmountElem) {
         axios.get('/digital-wallet-platform/wallet-server/user/v1/get_balance.php')
@@ -97,4 +100,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 balanceAmountElem.textContent = 'Error Loading Balance';
             });
     }
+
+    // 4. Fetch and display the user's transaction limits usage
+    const dailyUsedElem     = document.getElementById('dailyUsed');
+    const dailyLimitElem    = document.getElementById('dailyLimit');
+    const dailyRemainingElem= document.getElementById('dailyRemaining');
+    const weeklyUsedElem    = document.getElementById('weeklyUsed');
+    const weeklyLimitElem   = document.getElementById('weeklyLimit');
+    const weeklyRemainingElem = document.getElementById('weeklyRemaining');
+    const monthlyUsedElem   = document.getElementById('monthlyUsed');
+    const monthlyLimitElem  = document.getElementById('monthlyLimit');
+    const monthlyRemainingElem = document.getElementById('monthlyRemaining');
+
+    axios.get('/digital-wallet-platform/wallet-server/user/v1/get_limits_usage.php')
+        .then(response => {
+            if (response.data.error) {
+                dailyUsedElem.textContent = 'Error';
+                weeklyUsedElem.textContent = 'Error';
+                monthlyUsedElem.textContent = 'Error';
+            } else {
+                dailyUsedElem.textContent = response.data.dailyUsed.toFixed(2) + ' USDT';
+                dailyLimitElem.textContent = response.data.dailyLimit.toFixed(2) + ' USDT';
+                dailyRemainingElem.textContent = response.data.dailyRemaining.toFixed(2) + ' USDT';
+
+                weeklyUsedElem.textContent = response.data.weeklyUsed.toFixed(2) + ' USDT';
+                weeklyLimitElem.textContent = response.data.weeklyLimit.toFixed(2) + ' USDT';
+                weeklyRemainingElem.textContent = response.data.weeklyRemaining.toFixed(2) + ' USDT';
+
+                monthlyUsedElem.textContent = response.data.monthlyUsed.toFixed(2) + ' USDT';
+                monthlyLimitElem.textContent = response.data.monthlyLimit.toFixed(2) + ' USDT';
+                monthlyRemainingElem.textContent = response.data.monthlyRemaining.toFixed(2) + ' USDT';
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching limits usage:", error);
+        });
 });
