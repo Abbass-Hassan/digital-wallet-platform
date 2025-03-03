@@ -430,7 +430,6 @@
 
 /* Profile Container */
 .profile-container {
-    /* Fill the available width in .dashboard-main */
     width: 100%;
     box-sizing: border-box; /* Ensure padding/border is included in total width */
     
@@ -438,12 +437,6 @@
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-  
-    /* Remove max-width & center alignment */
-    /* max-width: 600px; */ /* <-- Remove or comment out */
-    /* margin: 20px auto;  */ /* <-- Remove or comment out */
-    
-    /* Instead, add a bottom margin if you like */
     margin: 20px 0;
   }
   
@@ -506,14 +499,12 @@
     box-shadow: 0 5px 15px rgba(234, 179, 8, 0.4);
   }
   
-  /* Optional: Responsive tweaks for smaller screens */
   @media (max-width: 768px) {
     .profile-container {
       margin: 10px 0;
       padding: 10px;
     }
     
-    /* If you want smaller spacing, reduce padding/gaps, etc. */
     .profile-form {
       gap: 10px;
     }
@@ -535,13 +526,14 @@
 
 /* Transaction Container (for Deposit & Withdraw pages) */
 .transaction-container {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 20px 0;  /* so it has spacing above/below */
     background: #ffffff;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
-    margin: 20px auto;
-}
+  }
 
 /* Transaction Title */
 .transaction-title {
@@ -610,7 +602,8 @@
 
 /* Transaction History Page Enhancements */
 .transaction-history {
-    max-width: 900px; /* Make it a bit wider for the table */
+    max-width: 100%; 
+    box-sizing: border-box;
   }
   
   /* Filter Section Container */
@@ -715,5 +708,12 @@
     margin-top: 10px;
   }
   
-
+  @media (max-width: 768px) {
+    .transaction-container {
+      margin: 10px 0;
+      padding: 15px; 
+      /* Slightly smaller padding on mobile */
+    }
+  }
+  
 
