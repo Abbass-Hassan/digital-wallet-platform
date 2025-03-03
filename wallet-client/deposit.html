@@ -5,25 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Deposit Funds</title>
   <link rel="stylesheet" href="css/style.css">
+  <link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+/>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body class="dashboard-body">
 
-    <aside class="dashboard-sidebar">
-        <div class="dashboard-sidebar-logo">Wallet</div>
-        <ul class="dashboard-sidebar-links">
-          <li class="dashboard-sidebar-item"><a href="dashboard.html">Dashboard</a></li>
-          <li class="dashboard-sidebar-item"><a href="transfer.html">Transfer</a></li>
-          <li class="dashboard-sidebar-item"><a href="transactions.html">Transactions</a></li>
-          <li class="dashboard-sidebar-item">Rewards Hub</li>
-          <li class="dashboard-sidebar-item">Referral</li>
-          <li class="dashboard-sidebar-item"><a href="profile.html">Account</a></li>
-          <li class="dashboard-sidebar-item">Settings</li>
-          <li class="dashboard-sidebar-item">
-            <a href="/digital-wallet-platform/wallet-server/user/v1/auth/logout.php">Logout</a>
-          </li>
-        </ul>
-    </aside>
+    <!-- Sidebar -->
+  <aside class="dashboard-sidebar">
+    <div class="dashboard-sidebar-logo">
+      <i class="fas fa-wallet"></i>
+      <span>Wallet</span>
+    </div>
+    
+    <ul class="dashboard-sidebar-links">
+        <li class="dashboard-sidebar-item">
+            <a href="dashboard.html">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+        <li class="dashboard-sidebar-item">
+            <a href="transfer.html">
+                <i class="fas fa-exchange-alt"></i>
+                <span>Transfer</span>
+            </a>
+        </li>
+        <li class="dashboard-sidebar-item">
+            <a href="transactions.html">
+                <i class="fas fa-receipt"></i>
+                <span>Transactions</span>
+            </a>
+        </li>
+        
+        <li class="dashboard-sidebar-item">
+            <a href="profile.html">
+                <i class="fas fa-user"></i>
+                <span>Account</span>
+            </a>
+        </li>
+        <li class="dashboard-sidebar-item">
+            <a href="#">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </li>
+        <li class="dashboard-sidebar-item">
+            <a href="/digital-wallet-platform/wallet-server/user/v1/auth/logout.php">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </li>
+    </ul>
+</aside>
+
     
     
 

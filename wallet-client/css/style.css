@@ -156,25 +156,28 @@
     margin-bottom: 8px;
 }
 
-/* Dashboard Light Theme */
-.dashboard-body {
-    background: #f8f9fa;
-    display: flex;
-    height: 100vh;
-  }
+
   
-  /* Sidebar */
+  /* SIDEBAR */
   .dashboard-sidebar {
+    position: fixed;    /* Pin the sidebar so it doesn’t scroll with the page */
+    top: 0;
+    left: 0;
     width: 250px;
+    height: 100vh;      /* Full viewport height */
     background: #ffffff;
     padding: 20px;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     border-right: 1px solid #e0e0e0;
+    overflow-y: auto;   /* Sidebar can scroll internally if content is tall */
+    z-index: 999;
   }
   
   .dashboard-sidebar-logo {
     font-size: 1.5rem;
-    padding: 4px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-weight: bold;
     margin-bottom: 20px;
     color: #1e293b;
@@ -182,34 +185,51 @@
   
   .dashboard-sidebar-links {
     list-style: none;
+    padding: 0;
+    margin: 0;
   }
   
   .dashboard-sidebar-item {
+    display: flex;
+    align-items: center;
     padding: 10px 15px;
     margin-top: 10px;
     cursor: pointer;
     transition: background 0.3s, color 0.3s;
     border-radius: 5px;
     font-weight: 500;
+  }
+  
+  .dashboard-sidebar-item a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
     color: #555;
+    width: 100%;
+    gap: 12px;
+    font-size: 16px;
   }
   
-  .dashboard-sidebar-item.active {
-    background: #fcd535;
-    color: #1e293b;
-  }
-  
+  .dashboard-sidebar-item.active,
   .dashboard-sidebar-item:hover {
     background: #fcd535;
     color: #1e293b;
   }
   
-  /* Main Content */
-  .dashboard-main {
-    flex: 1;
-    padding: 20px;
+  .dashboard-sidebar-item.active a,
+  .dashboard-sidebar-item:hover a {
+    color: #1e293b;
   }
   
+  /* MAIN CONTENT */
+  .dashboard-main {
+    /* The critical piece: create space for the sidebar so content isn’t hidden. */
+    margin-left: 250px; 
+    padding: 20px;
+    /* This area can scroll if it’s taller than the viewport. */
+  }
+  
+  /* HEADER, WIDGETS, etc. — your existing styles, unchanged */
   .dashboard-header {
     display: flex;
     justify-content: space-between;
@@ -219,12 +239,10 @@
     border-radius: 10px;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
   }
-  
   .dashboard-user {
     display: flex;
     align-items: center;
   }
-  
   .dashboard-user-avatar {
     width: 40px;
     height: 40px;
@@ -232,38 +250,14 @@
     border-radius: 50%;
     margin-right: 10px;
   }
-  
   .dashboard-user-name {
     font-weight: 600;
     color: #1e293b;
   }
-  
   .dashboard-user-meta {
     color: #6b7280;
   }
-  
-  .dashboard-deposit-btn {
-    background: linear-gradient(135deg, #fcd535, #eab308);
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease-in-out;
-  }
-  
-  .dashboard-deposit-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(234, 179, 8, 0.4);
-  }
-  
-  /* Container for header action buttons */
-  .dashboard-header-actions {
-    display: flex;
-    gap: 10px; /* Adjust spacing between buttons */
-  }
-  
-  /* Withdraw Button - similar to deposit button */
+  .dashboard-deposit-btn,
   .dashboard-withdraw-btn {
     background: linear-gradient(135deg, #fcd535, #eab308);
     border: none;
@@ -273,16 +267,39 @@
     cursor: pointer;
     transition: all 0.3s ease-in-out;
   }
-  
+  .dashboard-deposit-btn:hover,
   .dashboard-withdraw-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 10px rgba(234, 179, 8, 0.4);
   }
-  
-  /* Widgets Section */
+  .dashboard-header-actions {
+    display: flex;
+    gap: 10px;
+  }
   .dashboard-widgets {
-    /* Remove grid here to avoid conflicts with .widget-row */
     margin-top: 20px;
+  }
+  
+  /* RESPONSIVE ADJUSTMENTS */
+  @media screen and (max-width: 768px) {
+    .dashboard-sidebar {
+      width: 80px; /* narrower sidebar on mobile */
+    }
+  
+    /* Also reduce main content margin-left to match the new sidebar width */
+    .dashboard-main {
+      margin-left: 80px;
+    }
+  
+    /* Hide sidebar text except icons */
+    .dashboard-sidebar-logo span,
+    .dashboard-sidebar-item span {
+      display: none;
+    }
+    
+    .dashboard-sidebar-item {
+      justify-content: center;
+    }
   }
   
   /* Row-based layout for widgets */
