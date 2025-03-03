@@ -230,7 +230,10 @@
   }
   
   /* HEADER, WIDGETS, etc. — your existing styles, unchanged */
-  .dashboard-header {
+  /* In your CSS */
+
+/* Parent container styles */
+.dashboard-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -239,17 +242,33 @@
     border-radius: 10px;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
   }
+  
   .dashboard-user {
     display: flex;
     align-items: center;
   }
+  
+  /* Avatar container */
   .dashboard-user-avatar {
     width: 40px;
     height: 40px;
-    background: #ccc;
+    /* Light gray or custom color; you could also use a gradient here */
+    background: #eee; 
     border-radius: 50%;
     margin-right: 10px;
+  
+    /* Center the icon */
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
+  
+  /* Icon inside the avatar */
+  .dashboard-user-avatar i {
+    font-size: 18px;   /* Adjust as needed */
+    color: #555;       /* Icon color */
+  }
+  
   .dashboard-user-name {
     font-weight: 600;
     color: #1e293b;
