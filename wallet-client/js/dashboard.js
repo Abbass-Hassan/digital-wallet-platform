@@ -1,24 +1,40 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Fetch and display the user's name in the header
+    // 1. Fetch and display the user's name and tier in the header
     const userNameElem = document.querySelector('.dashboard-user-name');
+    const userMetaElem = document.querySelector('.dashboard-user-meta'); 
+      // Make sure you have <p class="dashboard-user-meta"> in your HTML
 
     axios.get('/digital-wallet-platform/wallet-server/user/v1/get_profile.php')
         .then(response => {
             if (response.data.success) {
                 let fullName = response.data.user.full_name;
+                let userTier = response.data.user.tier; // <-- fetch the tier
+
+                // Handle the user's name
                 if (!fullName || fullName.trim() === "") {
                     userNameElem.innerHTML = 'No name set. <a href="profile.html">Update your profile</a>';
                 } else {
                     userNameElem.textContent = fullName;
                 }
+
+                // Handle the user's tier
+                if (!userTier || userTier.trim() === "") {
+                    // If no tier is set, default to 'Regular User'
+                    userMetaElem.textContent = 'User Level: Regular';
+                } else {
+                    userMetaElem.textContent = 'User Level: ' + userTier;
+                }
+
             } else {
                 console.warn("Profile fetch failed:", response.data.message);
                 userNameElem.textContent = "Unknown User";
+                userMetaElem.textContent = "VIP Level: Unknown";
             }
         })
         .catch(error => {
             console.error("Error fetching profile:", error);
             userNameElem.textContent = "Error Loading Name";
+            userMetaElem.textContent = "VIP Level: Error";
         });
 
     // 2. Verification widget logic
@@ -38,6 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Parse the verification status (0: pending, 1: approved, -1: rejected)
             const status = parseInt(response.data.is_validated, 10);
 
+            // Remove old status classes
             verificationWidget.classList.remove('verification-pending', 'verification-approved', 'verification-rejected');
 
             switch (status) {
@@ -103,23 +120,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 4. Fetch and display the user's transaction limits usage
     // Elements for numeric usage/limits
-    const dailyInfo          = document.getElementById('dailyInfo');
-    const weeklyInfo         = document.getElementById('weeklyInfo');
-    const monthlyInfo        = document.getElementById('monthlyInfo');
+    const dailyInfo   = document.getElementById('dailyInfo');
+    const weeklyInfo  = document.getElementById('weeklyInfo');
+    const monthlyInfo = document.getElementById('monthlyInfo');
+
     // Elements for the progress bars
-    const dailyBar           = document.getElementById('dailyBar');
-    const weeklyBar          = document.getElementById('weeklyBar');
-    const monthlyBar         = document.getElementById('monthlyBar');
+    const dailyBar    = document.getElementById('dailyBar');
+    const weeklyBar   = document.getElementById('weeklyBar');
+    const monthlyBar  = document.getElementById('monthlyBar');
 
     // Helper function to update progress bar & text
     function updateProgressBar(used, limit, barElem, infoElem) {
-        const ratio = limit > 0 ? (used / limit) : 0;
+        const ratio   = limit > 0 ? (used / limit) : 0;
         const percent = Math.min(ratio * 100, 100);  // cap at 100%
         
         // Set bar width
         barElem.style.width = percent.toFixed(2) + '%';
 
-        // Set numeric text, e.g. "50.00 / 200.00"
+        // Set numeric text, e.g., "50.00 / 200.00"
         infoElem.textContent = used.toFixed(2) + ' / ' + limit.toFixed(2);
     }
 
