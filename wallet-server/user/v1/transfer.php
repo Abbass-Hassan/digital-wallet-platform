@@ -1,6 +1,12 @@
 <?php
 header("Content-Type: application/json");
 require_once __DIR__ . '/../../connection/db.php';
+require_once __DIR__ . '/../../models/UsersModel.php';
+require_once __DIR__ . '/../../models/WalletsModel.php';
+require_once __DIR__ . '/../../models/TransactionsModel.php';
+require_once __DIR__ . '/../../models/TransactionLimitsModel.php';
+require_once __DIR__ . '/../../utils/MailService.php';
+
 session_start();
 
 // Ensure the sender is logged in.
@@ -26,162 +32,154 @@ if ($amount <= 0) {
     exit;
 }
 
-// Check if the recipient exists (search only by email).
-$stmt = $conn->prepare("SELECT id FROM users WHERE email = :email LIMIT 1");
-$stmt->bindParam(":email", $recipient_email);
-$stmt->execute();
-$recipient = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$recipient) {
-    echo json_encode(["error" => "Recipient not found."]);
-    exit;
-}
-
-$recipient_id = $recipient['id'];
-
-// Prevent transferring to self.
-if ($recipient_id == $sender_id) {
-    echo json_encode(["error" => "You cannot transfer funds to yourself."]);
-    exit;
-}
-
-// Check the sender's wallet balance.
-$stmt = $conn->prepare("SELECT balance FROM wallets WHERE user_id = :user_id LIMIT 1");
-$stmt->bindParam(":user_id", $sender_id);
-$stmt->execute();
-$sender_wallet = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$sender_wallet || floatval($sender_wallet['balance']) < $amount) {
-    echo json_encode(["error" => "Insufficient funds."]);
-    exit;
-}
-
-// Fetch sender's tier
 try {
-    $userStmt = $conn->prepare("SELECT tier FROM users WHERE id = :user_id LIMIT 1");
-    $userStmt->execute(['user_id' => $sender_id]);
-    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+    // Initialize models
+    $usersModel = new UsersModel();
+    $walletsModel = new WalletsModel();
+    $transactionsModel = new TransactionsModel();
+    $transactionLimitsModel = new TransactionLimitsModel();
+
+    // Check if the recipient exists (search only by email).
+    $recipient = null;
+    $allUsers = $usersModel->getAllUsers();
+    foreach ($allUsers as $u) {
+        if ($u['email'] === $recipient_email) {
+            $recipient = $u;
+            break;
+        }
+    }
+
+    if (!$recipient) {
+        echo json_encode(["error" => "Recipient not found."]);
+        exit;
+    }
+
+    $recipient_id = $recipient['id'];
+
+    // Prevent transferring to self.
+    if ($recipient_id == $sender_id) {
+        echo json_encode(["error" => "You cannot transfer funds to yourself."]);
+        exit;
+    }
+
+    // Check the sender's wallet balance.
+    $sender_wallet = $walletsModel->getWalletByUserId($sender_id);
+    if (!$sender_wallet || floatval($sender_wallet['balance']) < $amount) {
+        echo json_encode(["error" => "Insufficient funds."]);
+        exit;
+    }
+
+    // Fetch sender's tier
+    $user = $usersModel->getUserById($sender_id);
     $tier = $user ? $user['tier'] : 'regular';
-} catch (PDOException $e) {
-    echo json_encode(["error" => $e->getMessage()]);
-    exit;
-}
 
-// Fetch limits for this tier
-try {
-    $limitStmt = $conn->prepare("SELECT daily_limit, weekly_limit, monthly_limit FROM transaction_limits WHERE tier = :tier LIMIT 1");
-    $limitStmt->execute(['tier' => $tier]);
-    $limits = $limitStmt->fetch(PDO::FETCH_ASSOC);
+    // Fetch limits for this tier
+    $limits = $transactionLimitsModel->getTransactionLimitByTier($tier);
     if (!$limits) {
         echo json_encode(["error" => "Transaction limits not defined for your tier"]);
         exit;
     }
-} catch (PDOException $e) {
-    echo json_encode(["error" => $e->getMessage()]);
-    exit;
-}
 
-// Calculate current totals for withdrawals & transfers (outgoing) where the user is sender
-try {
-    // Daily total
-    $dailyStmt = $conn->prepare("SELECT COALESCE(SUM(amount),0) AS total FROM transactions WHERE sender_id = :user_id AND DATE(created_at) = CURDATE() AND transaction_type IN ('withdrawal','transfer')");
-    $dailyStmt->execute(['user_id' => $sender_id]);
-    $dailyTotal = floatval($dailyStmt->fetch(PDO::FETCH_ASSOC)['total']);
+    // Keep limit calculations unchanged
+    try {
+        $dailyStmt = $conn->prepare("
+            SELECT COALESCE(SUM(amount),0) AS total 
+            FROM transactions 
+            WHERE sender_id = :user_id 
+              AND DATE(created_at) = CURDATE() 
+              AND transaction_type IN ('withdrawal','transfer')
+        ");
+        $dailyStmt->execute(['user_id' => $sender_id]);
+        $dailyTotal = floatval($dailyStmt->fetch(PDO::FETCH_ASSOC)['total']);
 
-    // Weekly total
-    $weeklyStmt = $conn->prepare("SELECT COALESCE(SUM(amount),0) AS total FROM transactions WHERE sender_id = :user_id AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1) AND transaction_type IN ('withdrawal','transfer')");
-    $weeklyStmt->execute(['user_id' => $sender_id]);
-    $weeklyTotal = floatval($weeklyStmt->fetch(PDO::FETCH_ASSOC)['total']);
+        $weeklyStmt = $conn->prepare("
+            SELECT COALESCE(SUM(amount),0) AS total 
+            FROM transactions 
+            WHERE sender_id = :user_id 
+              AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1) 
+              AND transaction_type IN ('withdrawal','transfer')
+        ");
+        $weeklyStmt->execute(['user_id' => $sender_id]);
+        $weeklyTotal = floatval($weeklyStmt->fetch(PDO::FETCH_ASSOC)['total']);
 
-    // Monthly total
-    $monthlyStmt = $conn->prepare("SELECT COALESCE(SUM(amount),0) AS total FROM transactions WHERE sender_id = :user_id AND MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE()) AND transaction_type IN ('withdrawal','transfer')");
-    $monthlyStmt->execute(['user_id' => $sender_id]);
-    $monthlyTotal = floatval($monthlyStmt->fetch(PDO::FETCH_ASSOC)['total']);
-} catch (PDOException $e) {
-    echo json_encode(["error" => $e->getMessage()]);
-    exit;
-}
+        $monthlyStmt = $conn->prepare("
+            SELECT COALESCE(SUM(amount),0) AS total 
+            FROM transactions 
+            WHERE sender_id = :user_id 
+              AND MONTH(created_at) = MONTH(CURDATE()) 
+              AND YEAR(created_at) = YEAR(CURDATE()) 
+              AND transaction_type IN ('withdrawal','transfer')
+        ");
+        $monthlyStmt->execute(['user_id' => $sender_id]);
+        $monthlyTotal = floatval($monthlyStmt->fetch(PDO::FETCH_ASSOC)['total']);
+    } catch (PDOException $e) {
+        echo json_encode(["error" => $e->getMessage()]);
+        exit;
+    }
 
-// Check limits: For transfers, we apply limits like withdrawals.
-if (($dailyTotal + $amount) > floatval($limits['daily_limit'])) {
-    echo json_encode(["error" => "Daily transfer/withdrawal limit exceeded"]);
-    exit;
-}
-if (($weeklyTotal + $amount) > floatval($limits['weekly_limit'])) {
-    echo json_encode(["error" => "Weekly transfer/withdrawal limit exceeded"]);
-    exit;
-}
-if (($monthlyTotal + $amount) > floatval($limits['monthly_limit'])) {
-    echo json_encode(["error" => "Monthly transfer/withdrawal limit exceeded"]);
-    exit;
-}
+    // Check limits: For transfers, we apply limits like withdrawals.
+    if (($dailyTotal + $amount) > floatval($limits['daily_limit'])) {
+        echo json_encode(["error" => "Daily transfer/withdrawal limit exceeded"]);
+        exit;
+    }
+    if (($weeklyTotal + $amount) > floatval($limits['weekly_limit'])) {
+        echo json_encode(["error" => "Weekly transfer/withdrawal limit exceeded"]);
+        exit;
+    }
+    if (($monthlyTotal + $amount) > floatval($limits['monthly_limit'])) {
+        echo json_encode(["error" => "Monthly transfer/withdrawal limit exceeded"]);
+        exit;
+    }
 
-// Begin a database transaction to ensure atomic updates.
-$conn->beginTransaction();
+    // Begin a database transaction to ensure atomic updates.
+    $conn->beginTransaction();
 
-try {
-    // Deduct the transfer amount from the sender's wallet.
-    $stmt = $conn->prepare("UPDATE wallets SET balance = balance - :amount WHERE user_id = :user_id");
-    $stmt->execute(["amount" => $amount, "user_id" => $sender_id]);
+    try {
+        // Deduct the transfer amount from the sender's wallet.
+        $newSenderBalance = floatval($sender_wallet['balance']) - $amount;
+        $walletsModel->update($sender_wallet['id'], $sender_id, $newSenderBalance);
 
-    // Add the transfer amount to the recipient's wallet.
-    $stmt = $conn->prepare("UPDATE wallets SET balance = balance + :amount WHERE user_id = :user_id");
-    $stmt->execute(["amount" => $amount, "user_id" => $recipient_id]);
+        // Add the transfer amount to the recipient's wallet.
+        $recipient_wallet = $walletsModel->getWalletByUserId($recipient_id);
+        if (!$recipient_wallet) {
+            // If the recipient doesn't have a wallet, create one
+            $walletsModel->create($recipient_id, $amount);
+        } else {
+            $newRecipientBalance = floatval($recipient_wallet['balance']) + $amount;
+            $walletsModel->update($recipient_wallet['id'], $recipient_id, $newRecipientBalance);
+        }
 
-    // Log the transaction in the transactions table.
-    $stmt = $conn->prepare("INSERT INTO transactions (sender_id, recipient_id, amount, transaction_type) VALUES (:sender_id, :recipient_id, :amount, 'transfer')");
-    $stmt->execute([
-        "sender_id" => $sender_id,
-        "recipient_id" => $recipient_id,
-        "amount" => $amount
-    ]);
+        // Log the transaction
+        $transactionsModel->create($sender_id, $recipient_id, 'transfer', $amount);
 
-    $conn->commit();
-    
-    // Calculate new sender balance (deducted)
-    $newBalance = floatval($sender_wallet['balance']) - $amount;
-    
-    // Send email confirmations
-    // Fetch sender email and recipient email from users table.
-    $senderStmt = $conn->prepare("SELECT email FROM users WHERE id = :user_id LIMIT 1");
-    $senderStmt->execute(['user_id' => $sender_id]);
-    $senderData = $senderStmt->fetch(PDO::FETCH_ASSOC);
-    $senderEmail = $senderData ? $senderData['email'] : null;
+        $conn->commit();
 
-    $recipientStmt = $conn->prepare("SELECT email FROM users WHERE id = :user_id LIMIT 1");
-    $recipientStmt->execute(['user_id' => $recipient_id]);
-    $recipientData = $recipientStmt->fetch(PDO::FETCH_ASSOC);
-    $recipientEmail = $recipientData ? $recipientData['email'] : null;
+        // Send email confirmations
+        $mailer = new MailService();
 
-    require_once __DIR__ . '/../../utils/MailService.php';
-    $mailer = new MailService();
-
-    // Email to sender
-    if ($senderEmail) {
+        // Email to sender
         $subjectSender = "Transfer Confirmation";
         $bodySender = "
             <h1>Transfer Successful</h1>
-            <p>You have transferred <strong>{$amount} USDT</strong> to <strong>{$recipientEmail}</strong>.</p>
-            <p>Your new balance is: <strong>{$newBalance} USDT</strong></p>
+            <p>You have transferred <strong>{$amount} USDT</strong> to <strong>{$recipient_email}</strong>.</p>
+            <p>Your new balance is: <strong>{$newSenderBalance} USDT</strong></p>
         ";
-        $mailer->sendMail($senderEmail, $subjectSender, $bodySender);
-    }
+        $mailer->sendMail($user['email'], $subjectSender, $bodySender);
 
-    // Email to recipient
-    if ($recipientEmail) {
+        // Email to recipient
         $subjectRecipient = "Funds Received";
         $bodyRecipient = "
             <h1>You've Received Funds</h1>
-            <p>You have received <strong>{$amount} USDT</strong> from <strong>{$senderEmail}</strong>.</p>
+            <p>You have received <strong>{$amount} USDT</strong> from <strong>{$user['email']}</strong>.</p>
         ";
-        $mailer->sendMail($recipientEmail, $subjectRecipient, $bodyRecipient);
-    }
-    
-    echo json_encode(["message" => "Transfer successful.", "new_balance" => $newBalance]);
-} catch (PDOException $e) {
-    $conn->rollBack();
-    echo json_encode(["error" => "Transfer failed: " . $e->getMessage()]);
-}
+        $mailer->sendMail($recipient_email, $subjectRecipient, $bodyRecipient);
 
-$conn = null;
+        echo json_encode(["message" => "Transfer successful.", "new_balance" => $newSenderBalance]);
+    } catch (PDOException $e) {
+        $conn->rollBack();
+        echo json_encode(["error" => "Transfer failed: " . $e->getMessage()]);
+    }
+} catch (PDOException $e) {
+    echo json_encode(["error" => "Database error: " . $e->getMessage()]);
+}
 ?>

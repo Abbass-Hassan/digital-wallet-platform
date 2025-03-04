@@ -1,6 +1,8 @@
 <?php
 // get_verification_status.php
 require_once __DIR__ . '/../../connection/db.php';
+require_once __DIR__ . '/../../models/VerificationsModel.php';
+
 header('Content-Type: application/json');
 
 session_start();
@@ -12,9 +14,11 @@ if (!isset($_SESSION['user_id'])) {
 $userId = $_SESSION['user_id'];
 
 try {
-    $stmt = $conn->prepare("SELECT is_validated FROM verifications WHERE user_id = :user_id LIMIT 1");
-    $stmt->execute(['user_id' => $userId]);
-    $verification = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Initialize VerificationsModel
+    $verificationsModel = new VerificationsModel();
+
+    // Fetch verification status
+    $verification = $verificationsModel->getVerificationByUserId($userId);
 
     if (!$verification) {
         // If there's no verification row, return a default (like 0)
@@ -26,3 +30,4 @@ try {
 } catch (PDOException $e) {
     echo json_encode(['error' => $e->getMessage()]);
 }
+?>

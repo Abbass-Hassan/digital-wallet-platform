@@ -1,6 +1,8 @@
 <?php
 header("Content-Type: application/json");
 require_once __DIR__ . '/../../connection/db.php';
+require_once __DIR__ . '/../../models/VerificationsModel.php';
+
 session_start();
 
 $response = ["status" => "error", "message" => "Something went wrong."];
@@ -42,23 +44,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $file_path = $upload_dir . $file_name;
 
     if (move_uploaded_file($file["tmp_name"], $file_path)) {
+        // Initialize VerificationsModel
+        $verificationsModel = new VerificationsModel();
+
         // Check if a verification record already exists for the user
-        $checkStmt = $conn->prepare("SELECT id FROM verifications WHERE user_id = ?");
-        $checkStmt->execute([$user_id]);
-        $existingVerification = $checkStmt->fetch(PDO::FETCH_ASSOC);
+        $existingVerification = $verificationsModel->getVerificationByUserId($user_id);
 
         if ($existingVerification) {
             // Update the existing verification record
-            $stmt = $conn->prepare("UPDATE verifications SET id_document = ?, is_validated = 0, verification_note = 'Verification resubmitted' WHERE user_id = ?");
-            if ($stmt->execute([$file_name, $user_id])) {
+            $updated = $verificationsModel->update(
+                $existingVerification['id'],
+                $user_id,
+                $file_name,
+                0,
+                'Verification resubmitted'
+            );
+
+            if ($updated) {
                 $response = ["status" => "success", "message" => "Document updated successfully. Pending admin approval."];
             } else {
                 $response["message"] = "Database update failed.";
             }
         } else {
-            // (Fallback) Insert a new verification record if none exists
-            $stmt = $conn->prepare("INSERT INTO verifications (user_id, id_document, is_validated) VALUES (?, ?, 0)");
-            if ($stmt->execute([$user_id, $file_name])) {
+            // Insert a new verification record if none exists
+            $created = $verificationsModel->create($user_id, $file_name, 0, 'Verification submitted');
+
+            if ($created) {
                 $response = ["status" => "success", "message" => "Document uploaded successfully. Pending admin approval."];
             } else {
                 $response["message"] = "Database update failed.";
@@ -69,6 +80,5 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 
-$conn = null;
 echo json_encode($response);
 ?>

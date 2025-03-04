@@ -2,6 +2,9 @@
 // reset_password.php
 header("Content-Type: application/json");
 require_once __DIR__ . '/../../connection/db.php';
+require_once __DIR__ . '/../../models/UsersModel.php';
+require_once __DIR__ . '/../../models/PasswordResetsModel.php';
+
 session_start();
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -24,10 +27,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     try {
+        // Initialize models
+        $usersModel = new UsersModel();
+        $passwordResetsModel = new PasswordResetsModel();
+
         // Retrieve token record
-        $stmt = $conn->prepare("SELECT * FROM password_resets WHERE token = :token LIMIT 1");
-        $stmt->execute(['token' => $token]);
-        $resetData = $stmt->fetch(PDO::FETCH_ASSOC);
+        $resetData = $passwordResetsModel->getResetByToken($token);
 
         if (!$resetData) {
             echo json_encode(["error" => "Invalid or expired token"]);
@@ -47,23 +52,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
 
         // Update user's password in the users table
-        $updateStmt = $conn->prepare("UPDATE users SET password = :password WHERE id = :user_id");
-        $updateStmt->execute([
-            'password' => $hashed_password,
-            'user_id' => $user_id
-        ]);
+        $updated = $usersModel->update($user_id, $usersModel->getUserById($user_id)['email'], $hashed_password, $usersModel->getUserById($user_id)['role']);
 
-        // Invalidate the token (delete from password_resets table)
-        $deleteStmt = $conn->prepare("DELETE FROM password_resets WHERE token = :token");
-        $deleteStmt->execute(['token' => $token]);
+        if ($updated) {
+            // Invalidate the token (delete from password_resets table)
+            $passwordResetsModel->delete($resetData['id']);
 
-        echo json_encode(["message" => "Password reset successful"]);
+            echo json_encode(["message" => "Password reset successful"]);
+        } else {
+            echo json_encode(["error" => "Failed to update password"]);
+        }
     } catch (PDOException $e) {
         echo json_encode(["error" => "Database error: " . $e->getMessage()]);
     }
 } else {
     echo json_encode(["error" => "Invalid request method."]);
 }
-
-$conn = null;
 ?>

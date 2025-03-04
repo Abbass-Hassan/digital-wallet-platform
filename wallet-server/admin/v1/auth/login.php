@@ -1,7 +1,9 @@
 <?php
 session_start();
 header("Content-Type: application/json");
+
 require_once __DIR__ . '/../../../connection/db.php';
+require_once __DIR__ . '/../../../models/UsersModel.php';
 
 $response = ["status" => "error", "message" => "Something went wrong"];
 
@@ -10,10 +12,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $password = $_POST["password"];
 
     try {
-        $stmt = $conn->prepare("SELECT id, email, password, role FROM users WHERE email = :email");
-        $stmt->bindParam(':email', $email);
-        $stmt->execute();
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        // Initialize UsersModel
+        $usersModel = new UsersModel();
+
+        // Fetch user by email
+        $user = null;
+        $allUsers = $usersModel->getAllUsers();
+        foreach ($allUsers as $u) {
+            if ($u['email'] === $email) {
+                $user = $u;
+                break;
+            }
+        }
 
         if ($user && $user['role'] == 1) {
             if (password_verify($password, $user['password'])) {

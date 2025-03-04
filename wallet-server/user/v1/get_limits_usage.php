@@ -1,6 +1,9 @@
 <?php
 header("Content-Type: application/json");
 require_once __DIR__ . '/../../connection/db.php';
+require_once __DIR__ . '/../../models/UsersModel.php';
+require_once __DIR__ . '/../../models/TransactionLimitsModel.php';
+
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
@@ -10,22 +13,17 @@ if (!isset($_SESSION['user_id'])) {
 
 $userId = $_SESSION['user_id'];
 
-// Get the user's tier from the users table
 try {
-    $userStmt = $conn->prepare("SELECT tier FROM users WHERE id = :user_id LIMIT 1");
-    $userStmt->execute(['user_id' => $userId]);
-    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
-    $tier = $user ? $user['tier'] : 'regular';
-} catch (PDOException $e) {
-    echo json_encode(["error" => $e->getMessage()]);
-    exit;
-}
+    // Initialize models
+    $usersModel = new UsersModel();
+    $transactionLimitsModel = new TransactionLimitsModel();
 
-// Get limits for the user's tier
-try {
-    $limitStmt = $conn->prepare("SELECT daily_limit, weekly_limit, monthly_limit FROM transaction_limits WHERE tier = :tier LIMIT 1");
-    $limitStmt->execute(['tier' => $tier]);
-    $limits = $limitStmt->fetch(PDO::FETCH_ASSOC);
+    // Get the user's tier from the users table
+    $user = $usersModel->getUserById($userId);
+    $tier = $user ? $user['tier'] : 'regular';
+
+    // Get limits for the user's tier
+    $limits = $transactionLimitsModel->getTransactionLimitByTier($tier);
     if (!$limits) {
         echo json_encode(["error" => "Transaction limits not defined for your tier"]);
         exit;
@@ -35,9 +33,8 @@ try {
     exit;
 }
 
-// Calculate current outgoing transactions (withdrawals + transfers) for the sender
+// Keep calculations unchanged
 try {
-    // Daily total
     $dailyStmt = $conn->prepare("
         SELECT COALESCE(SUM(amount), 0) AS total 
         FROM transactions 
@@ -48,7 +45,6 @@ try {
     $dailyStmt->execute(['user_id' => $userId]);
     $dailyUsed = floatval($dailyStmt->fetch(PDO::FETCH_ASSOC)['total']);
 
-    // Weekly total (using YEARWEEK, mode 1 for Monday as first day)
     $weeklyStmt = $conn->prepare("
         SELECT COALESCE(SUM(amount), 0) AS total 
         FROM transactions 
@@ -59,7 +55,6 @@ try {
     $weeklyStmt->execute(['user_id' => $userId]);
     $weeklyUsed = floatval($weeklyStmt->fetch(PDO::FETCH_ASSOC)['total']);
 
-    // Monthly total
     $monthlyStmt = $conn->prepare("
         SELECT COALESCE(SUM(amount), 0) AS total 
         FROM transactions 
@@ -92,6 +87,4 @@ echo json_encode([
     "monthlyLimit" => floatval($limits['monthly_limit']),
     "monthlyRemaining" => $monthlyRemaining
 ]);
-
-$conn = null;
 ?>

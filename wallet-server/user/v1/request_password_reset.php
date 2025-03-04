@@ -2,9 +2,12 @@
 // request_password_reset.php
 header("Content-Type: application/json");
 require_once __DIR__ . '/../../connection/db.php';
+require_once __DIR__ . '/../../models/UsersModel.php';
+require_once __DIR__ . '/../../models/PasswordResetsModel.php';
+require_once __DIR__ . '/../../utils/MailService.php';
+
 session_start();
 
-// Get email from POST data
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $email = trim($_POST["email"]);
 
@@ -14,12 +17,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     try {
+        // Initialize models
+        $usersModel = new UsersModel();
+        $passwordResetsModel = new PasswordResetsModel();
+
         // Check if user exists
-        $stmt = $conn->prepare("SELECT id FROM users WHERE email = :email LIMIT 1");
-        $stmt->bindParam(':email', $email);
-        $stmt->execute();
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        
+        $user = null;
+        $allUsers = $usersModel->getAllUsers();
+        foreach ($allUsers as $u) {
+            if ($u['email'] === $email) {
+                $user = $u;
+                break;
+            }
+        }
+
         // Always return the same message for security,
         // but proceed only if the user exists.
         $responseMessage = "If an account with that email exists, a password reset link has been sent.";
@@ -32,19 +43,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $expires_at = date("Y-m-d H:i:s", strtotime("+1 hour"));
 
             // Insert token into password_resets table
-            $insertStmt = $conn->prepare("INSERT INTO password_resets (user_id, token, expires_at) VALUES (:user_id, :token, :expires_at)");
-            $insertStmt->execute([
-                'user_id' => $user_id,
-                'token' => $token,
-                'expires_at' => $expires_at
-            ]);
+            $passwordResetsModel->create($user_id, $token, $expires_at);
 
             // Build the reset link (update the URL to match your local environment)
-$resetLink = "http://localhost/digital-wallet-platform/wallet-client/reset_password.html?token=" . urlencode($token);
-
+            $resetLink = "http://localhost/digital-wallet-platform/wallet-client/reset_password.html?token=" . urlencode($token);
 
             // Send email using MailService
-            require_once __DIR__ . '/../../utils/MailService.php';
             $mailer = new MailService();
             $subject = "Password Reset Request";
             $body = "
@@ -64,6 +68,4 @@ $resetLink = "http://localhost/digital-wallet-platform/wallet-client/reset_passw
 } else {
     echo json_encode(["error" => "Invalid request method."]);
 }
-
-$conn = null;
 ?>

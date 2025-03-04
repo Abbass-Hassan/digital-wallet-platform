@@ -1,7 +1,11 @@
 <?php
 session_start();
 header("Content-Type: application/json");
+
+// Include the DB connection and the models
 require_once __DIR__ . '/../../../connection/db.php';
+require_once __DIR__ . '/../../../models/UsersModel.php';
+require_once __DIR__ . '/../../../models/VerificationsModel.php';
 
 $response = ["status" => "error", "message" => "Something went wrong"];
 
@@ -10,21 +14,28 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $password = $_POST["password"];
 
     try {
-        $stmt = $conn->prepare("
-            SELECT 
-                users.id, users.email, users.password, users.role, 
-                COALESCE(verifications.is_validated, 0) AS is_validated
-            FROM users
-            LEFT JOIN verifications ON users.id = verifications.user_id
-            WHERE users.email = :email
-        ");
-        $stmt->bindParam(':email', $email);
-        $stmt->execute();
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        // Initialize the models
+        $usersModel = new UsersModel();
+        $verificationsModel = new VerificationsModel();
+
+        // Fetch user by email
+        $allUsers = $usersModel->getAllUsers();
+        $user = null;
+
+        foreach ($allUsers as $u) {
+            if ($u['email'] === $email) {
+                $user = $u;
+                break;
+            }
+        }
 
         if ($user) {
             if (password_verify($password, $user['password'])) {
-                if ($user['role'] == 1 && $user['is_validated'] == 0) {
+                // Fetch verification status
+                $verification = $verificationsModel->getVerificationByUserId($user['id']);
+                $is_validated = $verification ? $verification['is_validated'] : 0;
+
+                if ($user['role'] == 1 && $is_validated == 0) {
                     $response["message"] = "Admin account is not validated. Please contact support.";
                 } else {
                     $_SESSION["user_id"] = $user["id"];
@@ -43,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             "id" => $user["id"],
                             "email" => $user["email"],
                             "role" => $user["role"],
-                            "is_validated" => $user["is_validated"]
+                            "is_validated" => $is_validated
                         ]
                     ];
                 }
@@ -59,4 +70,3 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 echo json_encode($response);
-?>

@@ -1,22 +1,32 @@
 <?php
 header("Content-Type: application/json");
+
 require_once __DIR__ . '/../../connection/db.php';
+require_once __DIR__ . '/../../models/VerificationsModel.php';
+require_once __DIR__ . '/../../models/UsersModel.php';
 
 $response = ["status" => "error", "message" => "Something went wrong"];
 
 try {
-    $stmt = $conn->prepare("SELECT v.user_id, u.email, v.id_document 
-                            FROM verifications v 
-                            JOIN users u ON v.user_id = u.id 
-                            WHERE v.is_validated = 0");
-    $stmt->execute();
-    $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Initialize models
+    $verificationsModel = new VerificationsModel();
+    $usersModel = new UsersModel();
 
-    if ($requests) {
-        $response = ["status" => "success", "data" => $requests];
-    } else {
-        $response = ["status" => "success", "data" => []];
+    // Fetch all verification requests where is_validated = 0
+    $verificationRequests = $verificationsModel->getPendingVerifications();
+
+    $requests = [];
+
+    // Append user email to each verification request
+    foreach ($verificationRequests as $request) {
+        $user = $usersModel->getUserById($request['user_id']);
+        if ($user) {
+            $request['email'] = $user['email'];
+            $requests[] = $request;
+        }
     }
+
+    $response = ["status" => "success", "data" => $requests];
 } catch (PDOException $e) {
     $response["message"] = "Database error: " . $e->getMessage();
 }

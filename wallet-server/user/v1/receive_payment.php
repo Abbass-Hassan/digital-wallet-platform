@@ -2,6 +2,12 @@
 // receive_payment.php
 
 require_once __DIR__ . '/../../connection/db.php';
+require_once __DIR__ . '/../../models/WalletsModel.php';
+require_once __DIR__ . '/../../models/VerificationsModel.php';
+require_once __DIR__ . '/../../models/TransactionsModel.php';
+require_once __DIR__ . '/../../models/UsersModel.php';
+require_once __DIR__ . '/../../utils/MailService.php';
+
 header('Content-Type: application/json');
 session_start();
 
@@ -21,69 +27,45 @@ if (!isset($_GET['recipient_id'])) {
 
 $recipientId = $_GET['recipient_id'];
 
-// Enforce that the logged-in user must match the recipient in the QR code
-// if ($loggedInUserId != $recipientId) {
-//     echo json_encode(['error' => 'You are not the intended recipient for this payment']);
-//     exit;
-// }
-
-// Check if user is verified
 try {
-    $verifyStmt = $conn->prepare("SELECT is_validated FROM verifications WHERE user_id = :user_id LIMIT 1");
-    $verifyStmt->execute(['user_id' => $loggedInUserId]);
-    $verification = $verifyStmt->fetch(PDO::FETCH_ASSOC);
+    // Initialize models
+    $walletsModel = new WalletsModel();
+    $verificationsModel = new VerificationsModel();
+    $transactionsModel = new TransactionsModel();
+    $usersModel = new UsersModel();
 
+    // Check if user is verified
+    $verification = $verificationsModel->getVerificationByUserId($loggedInUserId);
     if (!$verification || (int)$verification['is_validated'] !== 1) {
         echo json_encode(['error' => 'Your account is not verified. You cannot receive payment.']);
         exit;
     }
-} catch (PDOException $e) {
-    echo json_encode(['error' => $e->getMessage()]);
-    exit;
-}
 
-// Extract amount from the query, default to 10 if not provided
-$amount = 10.0;
+    // Extract amount from the query, default to 10 if not provided
+    $amount = 10.0;
 
-
-try {
     // Check if the wallet exists for the user
-    $stmt = $conn->prepare("SELECT balance FROM wallets WHERE user_id = :user_id LIMIT 1");
-    $stmt->execute(['user_id' => $loggedInUserId]);
-    $wallet = $stmt->fetch(PDO::FETCH_ASSOC);
+    $wallet = $walletsModel->getWalletByUserId($loggedInUserId);
 
     if (!$wallet) {
         // Create a wallet record if it doesn't exist
-        $stmt = $conn->prepare("INSERT INTO wallets (user_id, balance) VALUES (:user_id, :balance)");
-        $stmt->execute(['user_id' => $loggedInUserId, 'balance' => $amount]);
+        $walletsModel->create($loggedInUserId, $amount);
         $newBalance = $amount;
     } else {
         // Update the existing wallet balance
-        $currentBalance = (float)$wallet['balance'];
-        $newBalance = $currentBalance + $amount;
-        $stmt = $conn->prepare("UPDATE wallets SET balance = :balance WHERE user_id = :user_id");
-        $stmt->execute(['balance' => $newBalance, 'user_id' => $loggedInUserId]);
+        $newBalance = floatval($wallet['balance']) + $amount;
+        $walletsModel->update($wallet['id'], $loggedInUserId, $newBalance);
     }
 
     // Record the transaction (sender_id is NULL since the funds come via QR code)
-    $transStmt = $conn->prepare("
-        INSERT INTO transactions (sender_id, recipient_id, amount, transaction_type) 
-        VALUES (NULL, :recipient_id, :amount, 'qr_payment')
-    ");
-    $transStmt->execute([
-        'recipient_id' => $loggedInUserId,
-        'amount'       => $amount
-    ]);
+    $transactionsModel->create(null, $loggedInUserId, 'qr_payment', $amount);
 
     // Fetch user's email for confirmation
-    $emailStmt = $conn->prepare("SELECT email FROM users WHERE id = :user_id LIMIT 1");
-    $emailStmt->execute(['user_id' => $loggedInUserId]);
-    $userData = $emailStmt->fetch(PDO::FETCH_ASSOC);
-    $userEmail = $userData ? $userData['email'] : null;
+    $user = $usersModel->getUserById($loggedInUserId);
+    $userEmail = $user ? $user['email'] : null;
 
     // Send an email notification if an email exists
     if ($userEmail) {
-        require_once __DIR__ . '/../../utils/MailService.php';
         $mailer = new MailService();
         $subject = "Payment Received";
         $body = "
@@ -103,5 +85,4 @@ try {
 } catch (PDOException $e) {
     echo json_encode(['error' => $e->getMessage()]);
 }
-
-$conn = null;
+?>

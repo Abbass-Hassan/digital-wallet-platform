@@ -1,7 +1,10 @@
 <?php
 header("Content-Type: application/json");
+
 require_once __DIR__ . '/../../connection/db.php';
-require_once __DIR__ . '/../../utils/MailService.php'; // Make sure this path is correct
+require_once __DIR__ . '/../../models/VerificationsModel.php';
+require_once __DIR__ . '/../../models/UsersModel.php';
+require_once __DIR__ . '/../../utils/MailService.php';
 
 $response = ["status" => "error", "message" => "Something went wrong"];
 
@@ -20,12 +23,27 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     try {
-        // Update verification status
-        $stmt = $conn->prepare("UPDATE verifications SET is_validated = :is_validated WHERE user_id = :user_id");
-        $stmt->bindParam(":is_validated", $is_validated, PDO::PARAM_INT);
-        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+        // Initialize models
+        $verificationsModel = new VerificationsModel();
+        $usersModel = new UsersModel();
 
-        if ($stmt->execute()) {
+        // Fetch the verification record
+        $verification = $verificationsModel->getVerificationByUserId($user_id);
+        if (!$verification) {
+            echo json_encode(["error" => "Verification record not found."]);
+            exit;
+        }
+
+        // Update verification status
+        $updated = $verificationsModel->update(
+            $verification['id'],
+            $verification['user_id'],
+            $verification['id_document'],
+            $is_validated,
+            ($is_validated == 1) ? "User verified" : "Verification rejected"
+        );
+
+        if ($updated) {
             $response["status"] = "success";
             $response["message"] = ($is_validated == 1)
                 ? "User verified successfully!"
@@ -34,15 +52,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             // If approved, send a welcome email with the QR link
             if ($is_validated == 1) {
                 // Fetch the user's email
-                $emailStmt = $conn->prepare("SELECT email FROM users WHERE id = :user_id LIMIT 1");
-                $emailStmt->execute(['user_id' => $user_id]);
-                $userData = $emailStmt->fetch(PDO::FETCH_ASSOC);
+                $user = $usersModel->getUserById($user_id);
+                $userEmail = $user ? $user['email'] : null;
 
-                if ($userData && !empty($userData['email'])) {
-                    $userEmail = $userData['email'];
-
+                if ($userEmail) {
                     // Link to generate_qr.php, which embeds a link to receive_payment.php
-                    // Adjust domain/paths as needed for your environment
                     $qrLink = "http://localhost/digital-wallet-platform/wallet-server/utils/generate_qr.php?recipient_id={$user_id}&amount=10";
 
                     $mailer = new MailService();
@@ -67,3 +81,4 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 echo json_encode($response);
+?>

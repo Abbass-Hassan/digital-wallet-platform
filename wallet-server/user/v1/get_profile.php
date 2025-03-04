@@ -8,34 +8,30 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-include_once("../../connection/db.php");
+require_once __DIR__ . '/../../connection/db.php';
+require_once __DIR__ . '/../../models/UserProfilesModel.php';
+require_once __DIR__ . '/../../models/UsersModel.php';
+
 $user_id = $_SESSION['user_id'];
 
 try {
-    // Fetch user profile fields + the tier from the 'users' table.
-    // Adjust the column names and table names if yours differ.
-    $query = "SELECT 
-                up.full_name, 
-                up.date_of_birth, 
-                up.phone_number, 
-                up.street_address, 
-                up.city, 
-                up.country, 
-                u.tier
-              FROM user_profiles AS up
-              JOIN users AS u ON up.user_id = u.id
-              WHERE up.user_id = :user_id";
+    // Initialize models
+    $userProfilesModel = new UserProfilesModel();
+    $usersModel = new UsersModel();
 
-    $stmt = $conn->prepare($query);
-    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    if ($stmt->rowCount() > 0) {
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        echo json_encode(["success" => true, "user" => $user]);
-    } else {
+    // Fetch user profile
+    $userProfile = $userProfilesModel->getProfileByUserId($user_id);
+    
+    if (!$userProfile) {
         echo json_encode(["success" => false, "message" => "User profile not found."]);
+        exit;
     }
+
+    // Fetch user tier from users table
+    $user = $usersModel->getUserById($user_id);
+    $userProfile['tier'] = $user ? $user['tier'] : 'regular';
+
+    echo json_encode(["success" => true, "user" => $userProfile]);
 } catch (PDOException $e) {
     echo json_encode(["success" => false, "message" => "Database error: " . $e->getMessage()]);
 }

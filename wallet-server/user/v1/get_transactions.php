@@ -1,6 +1,8 @@
 <?php
 header("Content-Type: application/json");
 require_once __DIR__ . '/../../connection/db.php';
+require_once __DIR__ . '/../../models/TransactionsModel.php';
+require_once __DIR__ . '/../../models/UsersModel.php';
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
@@ -14,53 +16,47 @@ $date = isset($_GET['date']) ? $_GET['date'] : null;
 $type = isset($_GET['type']) ? $_GET['type'] : null;
 
 try {
-    $whereClauses = [];
-    $params = [];
+    // Initialize models
+    $transactionsModel = new TransactionsModel();
+    $usersModel = new UsersModel();
 
-    // Must match rows where user is sender OR recipient
-    $whereClauses[] = "(t.sender_id = :userId OR t.recipient_id = :userId)";
-    $params[':userId'] = $userId;
+    // Fetch all transactions
+    $transactions = $transactionsModel->getAllTransactions();
 
-    // If type is given, filter by it
-    if ($type && in_array($type, ['deposit','withdrawal','transfer'])) {
-        $whereClauses[] = "t.transaction_type = :type";
-        $params[':type'] = $type;
+    // Filter transactions manually
+    $filteredTransactions = [];
+
+    foreach ($transactions as $transaction) {
+        // Check if the user is the sender or recipient
+        if ($transaction['sender_id'] != $userId && $transaction['recipient_id'] != $userId) {
+            continue;
+        }
+
+        // Filter by type if provided
+        if ($type && $transaction['transaction_type'] !== $type) {
+            continue;
+        }
+
+        // Filter by date if provided
+        if ($date && date('Y-m-d', strtotime($transaction['created_at'])) !== $date) {
+            continue;
+        }
+
+        // Get sender email (null if sender_id is null)
+        $transaction['sender_email'] = $transaction['sender_id']
+            ? $usersModel->getUserById($transaction['sender_id'])['email']
+            : null;
+
+        // Get recipient email (null if recipient_id is null)
+        $transaction['recipient_email'] = $transaction['recipient_id']
+            ? $usersModel->getUserById($transaction['recipient_id'])['email']
+            : null;
+
+        $filteredTransactions[] = $transaction;
     }
 
-    // If date is given, filter by that single date
-    if ($date) {
-        $whereClauses[] = "DATE(t.created_at) = :date";
-        $params[':date'] = $date;
-    }
-
-    $whereSQL = implode(" AND ", $whereClauses);
-
-    // We'll LEFT JOIN the users table twice:
-    //   s.* for the sender
-    //   r.* for the recipient
-    $sql = "SELECT 
-                t.id,
-                t.sender_id,
-                s.email AS sender_email,
-                t.recipient_id,
-                r.email AS recipient_email,
-                t.amount,
-                t.transaction_type,
-                t.created_at
-            FROM transactions t
-            LEFT JOIN users s ON t.sender_id = s.id
-            LEFT JOIN users r ON t.recipient_id = r.id
-            WHERE $whereSQL
-            ORDER BY t.created_at DESC";
-
-    $stmt = $conn->prepare($sql);
-    $stmt->execute($params);
-    $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    echo json_encode(["transactions" => $transactions, "userId" => $userId]);
+    echo json_encode(["transactions" => $filteredTransactions, "userId" => $userId]);
 } catch (PDOException $e) {
     echo json_encode(["error" => $e->getMessage()]);
 }
-
-$conn = null;
 ?>

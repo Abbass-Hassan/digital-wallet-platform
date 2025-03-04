@@ -1,6 +1,8 @@
 <?php
 // get_balance.php
 require_once __DIR__ . '/../../connection/db.php';
+require_once __DIR__ . '/../../models/WalletsModel.php';
+
 header('Content-Type: application/json');
 session_start();
 
@@ -12,13 +14,14 @@ if (!isset($_SESSION['user_id'])) {
 $userId = $_SESSION['user_id'];
 
 try {
-    $stmt = $conn->prepare("SELECT balance FROM wallets WHERE user_id = :user_id LIMIT 1");
-    $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
-    $stmt->execute();
-    $wallet = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Initialize WalletsModel
+    $walletsModel = new WalletsModel();
+
+    // Fetch wallet balance
+    $wallet = $walletsModel->getWalletByUserId($userId);
 
     if (!$wallet) {
-        // If there's no wallet row, return a default 0 or an error
+        // If there's no wallet row, return a default 0
         echo json_encode(['balance' => 0]);
         exit;
     }
@@ -27,6 +30,4 @@ try {
 } catch (PDOException $e) {
     echo json_encode(['error' => $e->getMessage()]);
 }
-
-$conn = null;
 ?>

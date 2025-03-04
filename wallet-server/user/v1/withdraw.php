@@ -1,6 +1,13 @@
 <?php
 // withdraw.php
 require_once __DIR__ . '/../../connection/db.php';
+require_once __DIR__ . '/../../models/WalletsModel.php';
+require_once __DIR__ . '/../../models/VerificationsModel.php';
+require_once __DIR__ . '/../../models/TransactionsModel.php';
+require_once __DIR__ . '/../../models/UsersModel.php';
+require_once __DIR__ . '/../../models/TransactionLimitsModel.php';
+require_once __DIR__ . '/../../utils/MailService.php';
+
 header('Content-Type: application/json');
 session_start();
 
@@ -11,93 +18,94 @@ if (!isset($_SESSION['user_id'])) {
 
 $userId = $_SESSION['user_id'];
 
-// Check verification status
 try {
-    $verifyStmt = $conn->prepare("SELECT is_validated FROM verifications WHERE user_id = :user_id LIMIT 1");
-    $verifyStmt->execute(['user_id' => $userId]);
-    $verification = $verifyStmt->fetch(PDO::FETCH_ASSOC);
+    // Initialize models
+    $walletsModel = new WalletsModel();
+    $verificationsModel = new VerificationsModel();
+    $transactionsModel = new TransactionsModel();
+    $usersModel = new UsersModel();
+    $transactionLimitsModel = new TransactionLimitsModel();
+
+    // Check verification status
+    $verification = $verificationsModel->getVerificationByUserId($userId);
     if (!$verification || $verification['is_validated'] != 1) {
         echo json_encode(['error' => 'Your account is not verified. You cannot withdraw.']);
         exit;
     }
-} catch (PDOException $e) {
-    echo json_encode(['error' => $e->getMessage()]);
-    exit;
-}
 
-$data = json_decode(file_get_contents("php://input"), true);
-$amount = floatval($data['amount']);
+    // Get withdrawal amount from input
+    $data = json_decode(file_get_contents("php://input"), true);
+    $amount = floatval($data['amount']);
 
-if ($amount <= 0) {
-    echo json_encode(['error' => 'Invalid withdrawal amount']);
-    exit;
-}
+    if ($amount <= 0) {
+        echo json_encode(['error' => 'Invalid withdrawal amount']);
+        exit;
+    }
 
-// Fetch user's tier
-try {
-    $userStmt = $conn->prepare("SELECT tier FROM users WHERE id = :user_id LIMIT 1");
-    $userStmt->execute(['user_id' => $userId]);
-    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+    // Fetch user's tier
+    $user = $usersModel->getUserById($userId);
     $tier = $user ? $user['tier'] : 'regular';
-} catch (PDOException $e) {
-    echo json_encode(['error' => $e->getMessage()]);
-    exit;
-}
 
-// Fetch limits for this tier
-try {
-    $limitStmt = $conn->prepare("SELECT daily_limit, weekly_limit, monthly_limit FROM transaction_limits WHERE tier = :tier LIMIT 1");
-    $limitStmt->execute(['tier' => $tier]);
-    $limits = $limitStmt->fetch(PDO::FETCH_ASSOC);
+    // Fetch limits for this tier
+    $limits = $transactionLimitsModel->getTransactionLimitByTier($tier);
     if (!$limits) {
         echo json_encode(['error' => 'Transaction limits not defined for your tier']);
         exit;
     }
-} catch (PDOException $e) {
-    echo json_encode(['error' => $e->getMessage()]);
-    exit;
-}
 
-// Calculate current totals for withdrawals & transfers (outgoing) where the user is sender
-try {
-    // Daily total
-    $dailyStmt = $conn->prepare("SELECT COALESCE(SUM(amount),0) AS total FROM transactions WHERE sender_id = :user_id AND DATE(created_at) = CURDATE() AND transaction_type IN ('withdrawal','transfer')");
-    $dailyStmt->execute(['user_id' => $userId]);
-    $dailyTotal = floatval($dailyStmt->fetch(PDO::FETCH_ASSOC)['total']);
+    // Keep limit calculations unchanged
+    try {
+        $dailyStmt = $conn->prepare("
+            SELECT COALESCE(SUM(amount), 0) AS total 
+            FROM transactions 
+            WHERE sender_id = :user_id 
+              AND DATE(created_at) = CURDATE() 
+              AND transaction_type IN ('withdrawal', 'transfer')
+        ");
+        $dailyStmt->execute(['user_id' => $userId]);
+        $dailyTotal = floatval($dailyStmt->fetch(PDO::FETCH_ASSOC)['total']);
 
-    // Weekly total
-    $weeklyStmt = $conn->prepare("SELECT COALESCE(SUM(amount),0) AS total FROM transactions WHERE sender_id = :user_id AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1) AND transaction_type IN ('withdrawal','transfer')");
-    $weeklyStmt->execute(['user_id' => $userId]);
-    $weeklyTotal = floatval($weeklyStmt->fetch(PDO::FETCH_ASSOC)['total']);
+        $weeklyStmt = $conn->prepare("
+            SELECT COALESCE(SUM(amount), 0) AS total 
+            FROM transactions 
+            WHERE sender_id = :user_id 
+              AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1) 
+              AND transaction_type IN ('withdrawal', 'transfer')
+        ");
+        $weeklyStmt->execute(['user_id' => $userId]);
+        $weeklyTotal = floatval($weeklyStmt->fetch(PDO::FETCH_ASSOC)['total']);
 
-    // Monthly total
-    $monthlyStmt = $conn->prepare("SELECT COALESCE(SUM(amount),0) AS total FROM transactions WHERE sender_id = :user_id AND MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE()) AND transaction_type IN ('withdrawal','transfer')");
-    $monthlyStmt->execute(['user_id' => $userId]);
-    $monthlyTotal = floatval($monthlyStmt->fetch(PDO::FETCH_ASSOC)['total']);
-} catch (PDOException $e) {
-    echo json_encode(['error' => $e->getMessage()]);
-    exit;
-}
+        $monthlyStmt = $conn->prepare("
+            SELECT COALESCE(SUM(amount), 0) AS total 
+            FROM transactions 
+            WHERE sender_id = :user_id 
+              AND MONTH(created_at) = MONTH(CURDATE()) 
+              AND YEAR(created_at) = YEAR(CURDATE()) 
+              AND transaction_type IN ('withdrawal', 'transfer')
+        ");
+        $monthlyStmt->execute(['user_id' => $userId]);
+        $monthlyTotal = floatval($monthlyStmt->fetch(PDO::FETCH_ASSOC)['total']);
+    } catch (PDOException $e) {
+        echo json_encode(['error' => $e->getMessage()]);
+        exit;
+    }
 
-// Check if new withdrawal would exceed limits
-if (($dailyTotal + $amount) > floatval($limits['daily_limit'])) {
-    echo json_encode(['error' => 'Daily withdrawal limit exceeded']);
-    exit;
-}
-if (($weeklyTotal + $amount) > floatval($limits['weekly_limit'])) {
-    echo json_encode(['error' => 'Weekly withdrawal limit exceeded']);
-    exit;
-}
-if (($monthlyTotal + $amount) > floatval($limits['monthly_limit'])) {
-    echo json_encode(['error' => 'Monthly withdrawal limit exceeded']);
-    exit;
-}
+    // Check if new withdrawal would exceed limits
+    if (($dailyTotal + $amount) > floatval($limits['daily_limit'])) {
+        echo json_encode(['error' => 'Daily withdrawal limit exceeded']);
+        exit;
+    }
+    if (($weeklyTotal + $amount) > floatval($limits['weekly_limit'])) {
+        echo json_encode(['error' => 'Weekly withdrawal limit exceeded']);
+        exit;
+    }
+    if (($monthlyTotal + $amount) > floatval($limits['monthly_limit'])) {
+        echo json_encode(['error' => 'Monthly withdrawal limit exceeded']);
+        exit;
+    }
 
-// Check wallet balance and update
-try {
-    $stmt = $conn->prepare("SELECT balance FROM wallets WHERE user_id = :user_id");
-    $stmt->execute(['user_id' => $userId]);
-    $wallet = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Check wallet balance and update
+    $wallet = $walletsModel->getWalletByUserId($userId);
     if (!$wallet) {
         echo json_encode(['error' => 'Wallet not found']);
         exit;
@@ -108,22 +116,16 @@ try {
     }
 
     $newBalance = floatval($wallet['balance']) - $amount;
-    $stmt = $conn->prepare("UPDATE wallets SET balance = :balance WHERE user_id = :user_id");
-    $stmt->execute(['balance' => $newBalance, 'user_id' => $userId]);
+    $walletsModel->update($wallet['id'], $userId, $newBalance);
 
     // Insert transaction record for withdrawal (recipient_id is NULL)
-    $transStmt = $conn->prepare("INSERT INTO transactions (sender_id, recipient_id, amount, transaction_type) VALUES (:user_id, NULL, :amount, 'withdrawal')");
-    $transStmt->execute(['user_id' => $userId, 'amount' => $amount]);
+    $transactionsModel->create($userId, NULL, 'withdrawal', $amount);
 
     // Fetch user's email for confirmation
-    $emailStmt = $conn->prepare("SELECT email FROM users WHERE id = :user_id LIMIT 1");
-    $emailStmt->execute(['user_id' => $userId]);
-    $userData = $emailStmt->fetch(PDO::FETCH_ASSOC);
-    $userEmail = $userData ? $userData['email'] : null;
+    $userEmail = $user ? $user['email'] : null;
 
     // Send email confirmation if email is available
     if ($userEmail) {
-        require_once __DIR__ . '/../../utils/MailService.php';
         $mailer = new MailService();
         $subject = "Withdrawal Confirmation";
         $body = "
@@ -138,6 +140,4 @@ try {
 } catch (PDOException $e) {
     echo json_encode(['error' => $e->getMessage()]);
 }
-
-$conn = null;
 ?>
