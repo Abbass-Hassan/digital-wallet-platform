@@ -717,3 +717,51 @@
   }
   
 
+  .help-section {
+    margin: 40px auto;
+    max-width: 800px;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  }
+  .help-section h2 {
+    border-bottom: 2px solid #fcd535;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    color: #1e293b;
+    font-size: 1.8rem;
+    font-weight: 700;
+  }
+  .help-section h3 {
+    margin-top: 20px;
+    color: #1e293b;
+    font-size: 1.4rem;
+    font-weight: 600;
+  }
+  .help-section p {
+    font-size: 1rem;
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 15px;
+  }
+  .faq-item {
+    margin-bottom: 20px;
+  }
+  .limits-tier {
+    margin-bottom: 20px;
+  }
+  .limits-tier h4 {
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+  }
+  .limits-tier ul {
+    list-style-type: disc;
+    margin-left: 20px;
+    padding-left: 0;
+  }
+  .limits-tier li {
+    margin-bottom: 6px;
+  }
