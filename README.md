@@ -11,7 +11,7 @@ The **Digital Wallet Platform** is a secure, scalable solution for managing user
 ![ER Diagram](./diagrams/ERDiagram_Wallet.png)
 
 ### Component Diagram
-![Component Diagram](./diagrams/ComponentDiagramWallet.pdf)
+![Component Diagram](./diagrams/ComponentDiagram_Wallet.png)
 
 ---
 
