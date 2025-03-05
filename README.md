@@ -1,21 +1,23 @@
-# digital-wallet-platform
-# Digital Wallet API Documentation
+# Digital Wallet Platform API Documentation
 
-This API provides functionality for user authentication, wallet transactions, and QR-based payments.
+## Overview
+This API provides endpoints for user authentication, transactions, and wallet management. It enables third-party integrations to access user balance, perform transfers, withdrawals, and deposits securely.
 
-## Base URL
-```
-http://localhost/digital-wallet-platform/wallet-server/user/v1/
+## Authentication
+All API requests require authentication via a JWT token in the Authorization header.
+
+**Header Format:**
+```http
+Authorization: Bearer YOUR_JWT_TOKEN
 ```
 
 ---
 
-## 🔑 Authentication
-
-### 1️⃣ Register User
-**Endpoint:** `POST /auth/register.php`  
-**Description:** Registers a new user.  
-**Request Body (JSON):**
+## User Authentication
+### Register a New User
+**Endpoint:** `/user/v1/auth/register.php`
+**Method:** `POST`
+**Request Body:**
 ```json
 {
   "email": "user@example.com",
@@ -31,10 +33,10 @@ http://localhost/digital-wallet-platform/wallet-server/user/v1/
 }
 ```
 
-### 2️⃣ Login
-**Endpoint:** `POST /auth/login.php`  
-**Description:** Logs in a user and starts a session.  
-**Request Body (JSON):**
+### User Login
+**Endpoint:** `/user/v1/auth/login.php`
+**Method:** `POST`
+**Request Body:**
 ```json
 {
   "email": "user@example.com",
@@ -44,40 +46,48 @@ http://localhost/digital-wallet-platform/wallet-server/user/v1/
 **Response:**
 ```json
 {
-  "status": "success",
-  "message": "Login successful"
-}
-```
-
-### 3️⃣ Logout
-**Endpoint:** `POST /auth/logout.php`  
-**Description:** Logs out a user and destroys the session.  
-**Response:**
-```json
-{
-  "status": "success",
-  "message": "Logout successful"
+  "token": "your_jwt_token"
 }
 ```
 
 ---
 
-## 💰 Wallet Operations
-
-### 4️⃣ Get Balance
-**Endpoint:** `GET /get_balance.php`  
-**Description:** Fetches the current wallet balance.  
+## Wallet Management
+### Get User Balance
+**Endpoint:** `/user/v1/get_balance.php`
+**Method:** `GET`
+**Headers:**
+```http
+Authorization: Bearer YOUR_JWT_TOKEN
+```
 **Response:**
 ```json
 {
-  "balance": 100.50
+  "balance": 150.75
 }
 ```
 
-### 5️⃣ Deposit Funds
-**Endpoint:** `POST /deposit.php`  
-**Description:** Deposits money into the user's wallet.  
-**Request Body (JSON):**
+### Deposit Funds
+**Endpoint:** `/user/v1/deposit.php`
+**Method:** `POST`
+**Request Body:**
+```json
+{
+  "amount": 100.00
+}
+```
+**Response:**
+```json
+{
+  "newBalance": 250.75,
+  "message": "Deposit successful"
+}
+```
+
+### Withdraw Funds
+**Endpoint:** `/user/v1/withdraw.php`
+**Method:** `POST`
+**Request Body:**
 ```json
 {
   "amount": 50.00
@@ -86,147 +96,135 @@ http://localhost/digital-wallet-platform/wallet-server/user/v1/
 **Response:**
 ```json
 {
-  "status": "success",
-  "message": "Deposit successful",
-  "new_balance": 150.50
-}
-```
-
-### 6️⃣ Withdraw Funds
-**Endpoint:** `POST /withdraw.php`  
-**Description:** Withdraws money from the user's wallet.  
-**Request Body (JSON):**
-```json
-{
-  "amount": 20.00
-}
-```
-**Response:**
-```json
-{
-  "status": "success",
-  "message": "Withdrawal successful",
-  "new_balance": 130.50
+  "newBalance": 200.75,
+  "message": "Withdrawal successful"
 }
 ```
 
 ---
 
-## 🔄 Transactions
-
-### 7️⃣ Transfer Funds
-**Endpoint:** `POST /transfer.php`  
-**Description:** Transfers money from one user to another.  
-**Request Body (JSON):**
+## Transactions
+### Transfer Funds
+**Endpoint:** `/user/v1/transfer.php`
+**Method:** `POST`
+**Request Body:**
 ```json
 {
-  "recipient_email": "receiver@example.com",
-  "amount": 10.00
+  "recipient_email": "recipient@example.com",
+  "amount": 25.00
 }
 ```
 **Response:**
 ```json
 {
-  "status": "success",
-  "message": "Transfer successful",
-  "new_balance": 120.50
+  "new_balance": 175.75,
+  "message": "Transfer successful."
 }
 ```
 
-### 8️⃣ Get Transaction History
-**Endpoint:** `GET /get_transactions.php`  
-**Description:** Retrieves the user's transaction history.  
+### Get User Transactions
+**Endpoint:** `/user/v1/get_transactions.php`
+**Method:** `GET`
 **Response:**
 ```json
 [
   {
-    "transaction_id": 1,
+    "id": 1,
     "type": "deposit",
-    "amount": 50.00,
-    "date": "2025-03-01"
+    "amount": 100.00,
+    "date": "2025-03-05"
   },
   {
-    "transaction_id": 2,
+    "id": 2,
     "type": "withdrawal",
-    "amount": 20.00,
-    "date": "2025-03-02"
+    "amount": 50.00,
+    "date": "2025-03-06"
   }
 ]
 ```
 
 ---
 
-## 🔒 User Profile & Verification
-
-### 9️⃣ Get Profile Information
-**Endpoint:** `GET /get_profile.php`  
-**Description:** Fetches user details.  
-**Response:**
+## Security & Verification
+### Request Password Reset
+**Endpoint:** `/user/v1/request_password_reset.php`
+**Method:** `POST`
+**Request Body:**
 ```json
 {
-  "email": "user@example.com",
-  "full_name": "John Doe",
-  "phone": "+123456789"
-}
-```
-
-### 🔐 Update Profile
-**Endpoint:** `POST /update_profile.php`  
-**Description:** Updates user profile information.  
-**Request Body (JSON):**
-```json
-{
-  "full_name": "John Doe",
-  "phone": "+123456789"
+  "email": "user@example.com"
 }
 ```
 **Response:**
 ```json
 {
-  "status": "success",
-  "message": "Profile updated"
+  "message": "If an account with that email exists, a password reset link has been sent."
 }
 ```
 
----
-
-## 💚 QR Code Payments
-
-### 1️⃣️4️⃣ Generate QR Code
-**Endpoint:** `GET /utils/generate_qr.php`  
-**Description:** Generates a QR code containing a payment link.  
-**Response:**  
-Returns a **QR Code image**.
-
-### 1️⃣️5️⃣ Receive Payment via QR Code
-**Endpoint:** `GET /receive_payment.php`  
-**Description:** Processes a payment when a QR code is scanned.  
-**Query Parameters:**
-```plaintext
-recipient_id=123
+### Reset Password
+**Endpoint:** `/user/v1/reset_password.php`
+**Method:** `POST`
+**Request Body:**
+```json
+{
+  "token": "reset_token",
+  "new_password": "newsecurepassword"
+}
 ```
 **Response:**
 ```json
 {
-  "status": "success",
-  "message": "Payment received successfully",
-  "new_balance": 110.50
+  "message": "Password successfully reset."
 }
 ```
 
 ---
 
-## 🚀 Future Enhancements
-- Webhook support for real-time transaction updates.
-- API rate limiting and security enhancements.
-- Mobile app integration.
+## QR Code Payments
+### Generate QR Code for Payments
+**Endpoint:** `/utils/generate_qr.php`
+**Method:** `GET`
+**Response:**
+Returns a PNG image of a QR Code that links to a payment request.
+
+### Receive Payment via QR Code
+**Endpoint:** `/user/v1/receive_payment.php`
+**Method:** `POST`
+**Request Body:**
+```json
+{
+  "recipient_id": 123,
+  "amount": 10.00
+}
+```
+**Response:**
+```json
+{
+  "newBalance": 160.75,
+  "message": "Payment received successfully."
+}
+```
 
 ---
 
-## 📞 Support
-For API support or integration help, contact **support@yourdomain.com**.
+## Error Handling
+All API responses will return a JSON error message in case of failure:
+```json
+{
+  "error": "Error message details here"
+}
+```
+
+## Notes
+- All transactions require JWT authentication.
+- Withdrawal and transfer limits are enforced per user tier.
+- QR codes can be used for quick payments.
+- Password resets are handled via secure email links.
+
+For further integration support, contact our API support team.
 
 ---
 
-This documentation provides a structured overview of all available endpoints, making it **developer-friendly** for third-party integrations. 🚀
-
+## License
+This project is licensed under the MIT License.
