@@ -5,7 +5,7 @@ require_once __DIR__ . '/../../connection/db.php';
 require_once __DIR__ . '/../../models/UsersModel.php';
 require_once __DIR__ . '/../../models/PasswordResetsModel.php';
 
-session_start();
+// Removed session_start() as it's not needed for public password reset endpoints
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $token = trim($_POST["token"]);
@@ -51,13 +51,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         // Hash the new password
         $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
 
+        // Retrieve user details for update
+        $userData = $usersModel->getUserById($user_id);
+        if (!$userData) {
+            echo json_encode(["error" => "User not found"]);
+            exit;
+        }
+
         // Update user's password in the users table
-        $updated = $usersModel->update($user_id, $usersModel->getUserById($user_id)['email'], $hashed_password, $usersModel->getUserById($user_id)['role']);
+        $updated = $usersModel->update(
+            $user_id, 
+            $userData['email'], 
+            $hashed_password, 
+            $userData['role']
+        );
 
         if ($updated) {
             // Invalidate the token (delete from password_resets table)
             $passwordResetsModel->delete($resetData['id']);
-
             echo json_encode(["message" => "Password reset successful"]);
         } else {
             echo json_encode(["error" => "Failed to update password"]);

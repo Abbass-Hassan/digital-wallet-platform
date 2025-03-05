@@ -1,21 +1,37 @@
 <?php
 header("Content-Type: application/json");
+
 require_once __DIR__ . '/../../connection/db.php';
 require_once __DIR__ . '/../../models/UsersModel.php';
 require_once __DIR__ . '/../../models/WalletsModel.php';
 require_once __DIR__ . '/../../models/TransactionsModel.php';
 require_once __DIR__ . '/../../models/TransactionLimitsModel.php';
 require_once __DIR__ . '/../../utils/MailService.php';
+require_once __DIR__ . '/../../utils/verify_jwt.php'; // Adjust path as needed
 
-session_start();
-
-// Ensure the sender is logged in.
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(["error" => "Unauthorized. Please log in."]);
+// Remove session_start() and use JWT for authentication.
+$headers = getallheaders();
+if (!isset($headers['Authorization'])) {
+    echo json_encode(["error" => "No authorization header provided."]);
     exit;
 }
 
-$sender_id = $_SESSION['user_id'];
+// Expected header format: "Bearer <token>"
+list($bearer, $jwt) = explode(' ', $headers['Authorization']);
+if ($bearer !== 'Bearer' || !$jwt) {
+    echo json_encode(["error" => "Invalid token format."]);
+    exit;
+}
+
+$jwt_secret = "CHANGE_THIS_TO_A_RANDOM_SECRET_KEY"; // Use your secure secret here.
+$decoded = verify_jwt($jwt, $jwt_secret);
+if (!$decoded) {
+    echo json_encode(["error" => "Invalid or expired token."]);
+    exit;
+}
+
+// Extract sender's user ID from the JWT payload.
+$sender_id = $decoded['id'];
 
 // Read the JSON input.
 $data = json_decode(file_get_contents("php://input"), true);
@@ -33,13 +49,13 @@ if ($amount <= 0) {
 }
 
 try {
-    // Initialize models
+    // Initialize models.
     $usersModel = new UsersModel();
     $walletsModel = new WalletsModel();
     $transactionsModel = new TransactionsModel();
     $transactionLimitsModel = new TransactionLimitsModel();
 
-    // Check if the recipient exists (search only by email).
+    // Check if the recipient exists (search by email).
     $recipient = null;
     $allUsers = $usersModel->getAllUsers();
     foreach ($allUsers as $u) {
@@ -69,18 +85,18 @@ try {
         exit;
     }
 
-    // Fetch sender's tier
+    // Fetch sender's tier.
     $user = $usersModel->getUserById($sender_id);
     $tier = $user ? $user['tier'] : 'regular';
 
-    // Fetch limits for this tier
+    // Fetch limits for this tier.
     $limits = $transactionLimitsModel->getTransactionLimitByTier($tier);
     if (!$limits) {
         echo json_encode(["error" => "Transaction limits not defined for your tier"]);
         exit;
     }
 
-    // Keep limit calculations unchanged
+    // Keep limit calculations unchanged.
     try {
         $dailyStmt = $conn->prepare("
             SELECT COALESCE(SUM(amount),0) AS total 
@@ -142,22 +158,22 @@ try {
         // Add the transfer amount to the recipient's wallet.
         $recipient_wallet = $walletsModel->getWalletByUserId($recipient_id);
         if (!$recipient_wallet) {
-            // If the recipient doesn't have a wallet, create one
+            // If the recipient doesn't have a wallet, create one.
             $walletsModel->create($recipient_id, $amount);
         } else {
             $newRecipientBalance = floatval($recipient_wallet['balance']) + $amount;
             $walletsModel->update($recipient_wallet['id'], $recipient_id, $newRecipientBalance);
         }
 
-        // Log the transaction
+        // Log the transaction.
         $transactionsModel->create($sender_id, $recipient_id, 'transfer', $amount);
 
         $conn->commit();
 
-        // Send email confirmations
+        // Send email confirmations.
         $mailer = new MailService();
 
-        // Email to sender
+        // Email to sender.
         $subjectSender = "Transfer Confirmation";
         $bodySender = "
             <h1>Transfer Successful</h1>
@@ -166,7 +182,7 @@ try {
         ";
         $mailer->sendMail($user['email'], $subjectSender, $bodySender);
 
-        // Email to recipient
+        // Email to recipient.
         $subjectRecipient = "Funds Received";
         $bodyRecipient = "
             <h1>You've Received Funds</h1>

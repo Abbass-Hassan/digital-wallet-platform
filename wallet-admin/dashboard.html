@@ -2,4 +2,11 @@
 
 <a href="http://localhost/digital-wallet-platform/wallet-admin/verification_requests.html" class="btn">Verification Requests</a>
 <br>
-<a href="http://localhost/digital-wallet-platform/wallet-server/admin/v1/auth/logout.php" class="btn">Logout</a>
+<a href="#" class="btn" onclick="logout(); return false;">Logout</a>
+
+<script>
+  function logout() {
+    localStorage.removeItem('admin_jwt');
+    window.location.href = "http://localhost/digital-wallet-platform/wallet-admin/login.html";
+  }
+</script>

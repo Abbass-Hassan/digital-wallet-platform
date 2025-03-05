@@ -1,21 +1,38 @@
 <?php
-// deposit.php
+header('Content-Type: application/json');
+
 require_once __DIR__ . '/../../connection/db.php';
 require_once __DIR__ . '/../../models/WalletsModel.php';
 require_once __DIR__ . '/../../models/VerificationsModel.php';
 require_once __DIR__ . '/../../models/TransactionsModel.php';
 require_once __DIR__ . '/../../models/UsersModel.php';
 require_once __DIR__ . '/../../utils/MailService.php';
+require_once __DIR__ . '/../../utils/verify_jwt.php'; // Adjust path as needed
 
-header('Content-Type: application/json');
-session_start();
-
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['error' => 'Unauthorized']);
+// Remove session_start() and check for JWT in the Authorization header
+$headers = getallheaders();
+if (!isset($headers['Authorization'])) {
+    echo json_encode(['error' => 'No authorization header provided']);
     exit;
 }
 
-$userId = $_SESSION['user_id'];
+// Expected header format: "Bearer <token>"
+list($bearer, $jwt) = explode(' ', $headers['Authorization']);
+if ($bearer !== 'Bearer' || !$jwt) {
+    echo json_encode(['error' => 'Invalid token format']);
+    exit;
+}
+
+// Replace with your secure secret key
+$jwt_secret = "CHANGE_THIS_TO_A_RANDOM_SECRET_KEY";
+$decoded = verify_jwt($jwt, $jwt_secret);
+if (!$decoded) {
+    echo json_encode(['error' => 'Invalid or expired token']);
+    exit;
+}
+
+// Extract user ID from the token payload
+$userId = $decoded['id'];
 
 try {
     // Initialize models
@@ -54,14 +71,14 @@ try {
     }
 
     // Insert transaction record for deposit
-    // In your table structure, sender_id is NULL for deposits, and recipient_id is the user
+    // For deposits, sender_id is NULL and recipient_id is the user
     $transactionsModel->create(null, $userId, 'deposit', $amount, 'External Deposit');
 
-    // Fetch user's email from users table for confirmation
+    // Fetch user's email from the users table for confirmation
     $user = $usersModel->getUserById($userId);
     $userEmail = $user ? $user['email'] : null;
 
-    // Send deposit confirmation email if email exists
+    // Send deposit confirmation email if an email exists
     if ($userEmail) {
         $mailer = new MailService();
         $subject = "Deposit Confirmation";

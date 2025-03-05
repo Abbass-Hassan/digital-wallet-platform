@@ -1,10 +1,24 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Fetch and display the user's name and tier in the header
-    const userNameElem = document.querySelector('.dashboard-user-name');
-    const userMetaElem = document.querySelector('.dashboard-user-meta'); 
-      // Make sure you have <p class="dashboard-user-meta"> in your HTML
+    // 1. Get the JWT from localStorage
+    const token = localStorage.getItem('jwt');
+    if (!token) {
+        // If there's no token, user is not logged in; redirect to login
+        window.location.href = 'login.html';
+        return;
+    }
 
-    axios.get('/digital-wallet-platform/wallet-server/user/v1/get_profile.php')
+    // 2. Helper for axios config with Authorization header
+    const axiosConfig = {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    };
+
+    // 3. Fetch and display the user's name and tier in the header
+    const userNameElem = document.querySelector('.dashboard-user-name');
+    const userMetaElem = document.querySelector('.dashboard-user-meta');
+
+    axios.get('/digital-wallet-platform/wallet-server/user/v1/get_profile.php', axiosConfig)
         .then(response => {
             if (response.data.success) {
                 let fullName = response.data.user.full_name;
@@ -37,13 +51,13 @@ document.addEventListener('DOMContentLoaded', function() {
             userMetaElem.textContent = "VIP Level: Error";
         });
 
-    // 2. Verification widget logic
+    // 4. Verification widget logic
     const verificationWidget  = document.getElementById('verificationWidget');
     const verificationTitle   = document.getElementById('verificationTitle');
     const verificationMessage = document.getElementById('verificationMessage');
     const verificationButton  = document.getElementById('verificationButton');
 
-    axios.get('/digital-wallet-platform/wallet-server/user/v1/get_verification_status.php')
+    axios.get('/digital-wallet-platform/wallet-server/user/v1/get_verification_status.php', axiosConfig)
         .then(response => {
             if (response.data.error) {
                 verificationTitle.textContent = 'Error';
@@ -100,10 +114,10 @@ document.addEventListener('DOMContentLoaded', function() {
             verificationMessage.textContent = 'Unable to load verification status.';
         });
 
-    // 3. Fetch and display the user's wallet balance
+    // 5. Fetch and display the user's wallet balance
     const balanceAmountElem = document.getElementById('balanceAmount');
     if (balanceAmountElem) {
-        axios.get('/digital-wallet-platform/wallet-server/user/v1/get_balance.php')
+        axios.get('/digital-wallet-platform/wallet-server/user/v1/get_balance.php', axiosConfig)
             .then(response => {
                 if (response.data.error) {
                     balanceAmountElem.textContent = `Error: ${response.data.error}`;
@@ -118,30 +132,26 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // 4. Fetch and display the user's transaction limits usage
-    // Elements for numeric usage/limits
+    // 6. Fetch and display the user's transaction limits usage
     const dailyInfo   = document.getElementById('dailyInfo');
     const weeklyInfo  = document.getElementById('weeklyInfo');
     const monthlyInfo = document.getElementById('monthlyInfo');
 
-    // Elements for the progress bars
     const dailyBar    = document.getElementById('dailyBar');
     const weeklyBar   = document.getElementById('weeklyBar');
     const monthlyBar  = document.getElementById('monthlyBar');
 
-    // Helper function to update progress bar & text
     function updateProgressBar(used, limit, barElem, infoElem) {
         const ratio   = limit > 0 ? (used / limit) : 0;
         const percent = Math.min(ratio * 100, 100);  // cap at 100%
-        
+
         // Set bar width
         barElem.style.width = percent.toFixed(2) + '%';
-
         // Set numeric text, e.g., "50.00 / 200.00"
         infoElem.textContent = used.toFixed(2) + ' / ' + limit.toFixed(2);
     }
 
-    axios.get('/digital-wallet-platform/wallet-server/user/v1/get_limits_usage.php')
+    axios.get('/digital-wallet-platform/wallet-server/user/v1/get_limits_usage.php', axiosConfig)
         .then(response => {
             if (response.data.error) {
                 dailyInfo.textContent   = 'Error';

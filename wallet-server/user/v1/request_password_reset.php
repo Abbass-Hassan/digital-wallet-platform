@@ -6,8 +6,6 @@ require_once __DIR__ . '/../../models/UsersModel.php';
 require_once __DIR__ . '/../../models/PasswordResetsModel.php';
 require_once __DIR__ . '/../../utils/MailService.php';
 
-session_start();
-
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $email = trim($_POST["email"]);
 
@@ -45,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             // Insert token into password_resets table
             $passwordResetsModel->create($user_id, $token, $expires_at);
 
-            // Build the reset link (update the URL to match your local environment)
+            // Build the reset link (update the URL to match your environment)
             $resetLink = "http://localhost/digital-wallet-platform/wallet-client/reset_password.html?token=" . urlencode($token);
 
             // Send email using MailService

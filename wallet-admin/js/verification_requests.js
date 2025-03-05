@@ -1,8 +1,24 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // Retrieve the admin JWT from localStorage
+    const token = localStorage.getItem("admin_jwt");
+    if (!token) {
+        // Redirect to admin login if no token is found
+        window.location.href = "login.html";
+        return;
+    }
+    
+    // Create an axios configuration with the Authorization header
+    const axiosConfig = {
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+        }
+    };
+
     const tableBody = document.getElementById("verificationRequestsBody");
 
     function fetchRequests() {
-        axios.get("http://localhost/digital-wallet-platform/wallet-server/admin/v1/verification_requests.php")
+        axios.get("http://localhost/digital-wallet-platform/wallet-server/admin/v1/verification_requests.php", axiosConfig)
             .then(response => {
                 if (response.data.status === "success") {
                     tableBody.innerHTML = ""; // Clear existing rows
@@ -51,12 +67,18 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        axios.post("http://localhost/digital-wallet-platform/wallet-server/admin/v1/update_verification.php", {
-            user_id: user_id,
-            is_validated: is_validated
-        }, {
-            headers: { "Content-Type": "application/json" }
-        })
+        axios.post("http://localhost/digital-wallet-platform/wallet-server/admin/v1/update_verification.php", 
+            {
+                user_id: user_id,
+                is_validated: is_validated
+            }, 
+            {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            }
+        )
         .then(response => {
             const data = response.data;
 
@@ -75,6 +97,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Initial load
+    // Initial load of verification requests
     fetchRequests();
 });

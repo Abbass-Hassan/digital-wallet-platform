@@ -1,10 +1,25 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Retrieve the JWT from localStorage
+    const token = localStorage.getItem('jwt');
+    if (!token) {
+        // Redirect to login if no token is found
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Axios configuration with JWT in the Authorization header
+    const axiosConfig = {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    };
+
     const filterBtn    = document.getElementById('filterBtn');
     const filterDate   = document.getElementById('filterDate');
     const typeSelect   = document.getElementById('typeSelect');
     const transactionsList = document.getElementById('transactionsList');
 
-    let loggedInUserId = null; // We'll set this after we fetch from server
+    let loggedInUserId = null; // We'll set this after we fetch from the server
 
     // Optionally load all transactions on page load
     fetchTransactions();
@@ -14,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function fetchTransactions() {
-        // Build query params
+        // Build query parameters
         const params = new URLSearchParams();
         if (filterDate.value) {
             params.append('date', filterDate.value);
@@ -23,13 +38,13 @@ document.addEventListener('DOMContentLoaded', function() {
             params.append('type', typeSelect.value);
         }
 
-        axios.get('/digital-wallet-platform/wallet-server/user/v1/get_transactions.php?' + params.toString())
+        axios.get('/digital-wallet-platform/wallet-server/user/v1/get_transactions.php?' + params.toString(), axiosConfig)
             .then(response => {
                 if (response.data.error) {
                     transactionsList.innerHTML = `<p>Error: ${response.data.error}</p>`;
                 } else {
                     const txns = response.data.transactions;
-                    // We'll store the userId from the server
+                    // Store the userId from the server response
                     loggedInUserId = response.data.userId || null;
                     renderTransactions(txns);
                 }

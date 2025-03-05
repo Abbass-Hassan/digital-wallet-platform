@@ -4,6 +4,13 @@ document.addEventListener("DOMContentLoaded", function() {
     transferBtn.addEventListener("click", function(e) {
         e.preventDefault();
 
+        // Retrieve the JWT from localStorage
+        const token = localStorage.getItem('jwt');
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+
         // Get the recipient email and transfer amount from the form.
         const recipientEmail = document.getElementById("recipientQuery").value.trim();
         const transferAmount = parseFloat(document.getElementById("transferAmount").value);
@@ -23,17 +30,22 @@ document.addEventListener("DOMContentLoaded", function() {
             amount: transferAmount
         };
 
-        axios.post('/digital-wallet-platform/wallet-server/user/v1/transfer.php', data)
-            .then(response => {
-                if (response.data.error) {
-                    alert(response.data.error);
-                } else {
-                    window.location.href = 'dashboard.html';
-                }
-            })
-            .catch(error => {
-                console.error("Transfer error:", error);
-                alert("An error occurred during the transfer. Please try again later.");
-            });
+        // Include JWT in the Authorization header
+        axios.post('/digital-wallet-platform/wallet-server/user/v1/transfer.php', data, {
+            headers: { 
+                'Authorization': `Bearer ${token}` 
+            }
+        })
+        .then(response => {
+            if (response.data.error) {
+                alert(response.data.error);
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        })
+        .catch(error => {
+            console.error("Transfer error:", error);
+            alert("An error occurred during the transfer. Please try again later.");
+        });
     });
 });
