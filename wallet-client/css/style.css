@@ -1,4 +1,3 @@
-/* Global Styles */
 * {
     margin: 0;
     padding: 0;
@@ -16,7 +15,6 @@
     background: #f9fafb;
 }
 
-/* Containers */
 .login-container, .register-container, .verification-container {
     display: flex;
     justify-content: center;
@@ -24,7 +22,6 @@
     width: 100%;
 }
 
-/* Form Box */
 .login-form-box, .register-form-box, .verification-container {
     background: #ffffff;
     padding: 2.5rem;
@@ -40,7 +37,6 @@
     transform: translateY(-3px);
 }
 
-/* Titles & Subtitles */
 .login-title, .register-title, .verification-title {
     font-size: 1.8rem;
     font-weight: 700;
@@ -54,7 +50,6 @@
     margin-bottom: 20px;
 }
 
-/* Input Fields */
 .login-input-group, .register-input-group {
     position: relative;
     margin-bottom: 16px;
@@ -77,7 +72,6 @@
     box-shadow: 0 0 8px rgba(252, 213, 53, 0.4);
 }
 
-/* Buttons */
 .login-btn, .register-btn, .verification-btn {
     background: linear-gradient(135deg, #fcd535, #eab308);
     border: none;
@@ -96,7 +90,6 @@
     box-shadow: 0 5px 15px rgba(234, 179, 8, 0.4);
 }
 
-/* Auth Links */
 .auth-link {
     margin-top: 12px;
     font-size: 0.9rem;
@@ -114,6 +107,9 @@
     color: #eab308;
 }
 
+
+
+
 /* Verification Page */
 .verification-content {
     display: flex;
@@ -126,7 +122,6 @@
     margin-top: 20px;
 }
 
-/* Upload Section */
 .verification-upload-box {
     display: block;
     background: #f1f5f9;
@@ -144,7 +139,6 @@
     background: #e2e8f0;
 }
 
-/* Guidelines */
 .verification-guidelines {
     margin-top: 15px;
     text-align: left;
@@ -157,20 +151,20 @@
 }
 
 
+
   
   /* SIDEBAR */
   .dashboard-sidebar {
-    position: fixed;    /* Pin the sidebar so it doesn’t scroll with the page */
+    position: fixed;   
     top: 0;
     left: 0;
     width: 250px;
-    height: 100vh;      /* Full viewport height */
+    height: 100vh; 
     background: #ffffff;
     padding: 20px;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     border-right: 1px solid #e0e0e0;
-    overflow-y: auto;   /* Sidebar can scroll internally if content is tall */
-    z-index: 999;
+    overflow-y: auto;  
   }
   
   .dashboard-sidebar-logo {
@@ -223,16 +217,10 @@
   
   /* MAIN CONTENT */
   .dashboard-main {
-    /* The critical piece: create space for the sidebar so content isn’t hidden. */
     margin-left: 250px; 
     padding: 20px;
-    /* This area can scroll if it’s taller than the viewport. */
   }
-  
-  /* HEADER, WIDGETS, etc. — your existing styles, unchanged */
-  /* In your CSS */
 
-/* Parent container styles */
 .dashboard-header {
     display: flex;
     justify-content: space-between;
@@ -248,25 +236,20 @@
     align-items: center;
   }
   
-  /* Avatar container */
   .dashboard-user-avatar {
     width: 40px;
     height: 40px;
-    /* Light gray or custom color; you could also use a gradient here */
     background: #eee; 
     border-radius: 50%;
     margin-right: 10px;
-  
-    /* Center the icon */
     display: flex;
     align-items: center;
     justify-content: center;
   }
   
-  /* Icon inside the avatar */
   .dashboard-user-avatar i {
-    font-size: 18px;   /* Adjust as needed */
-    color: #555;       /* Icon color */
+    font-size: 18px;  
+    color: #555;     
   }
   
   .dashboard-user-name {
@@ -299,18 +282,15 @@
     margin-top: 20px;
   }
   
-  /* RESPONSIVE ADJUSTMENTS */
   @media screen and (max-width: 768px) {
     .dashboard-sidebar {
-      width: 80px; /* narrower sidebar on mobile */
+      width: 80px;
     }
   
-    /* Also reduce main content margin-left to match the new sidebar width */
     .dashboard-main {
       margin-left: 80px;
     }
   
-    /* Hide sidebar text except icons */
     .dashboard-sidebar-logo span,
     .dashboard-sidebar-item span {
       display: none;
@@ -321,22 +301,19 @@
     }
   }
   
-  /* Row-based layout for widgets */
   .widget-row {
     display: flex;
     gap: 20px;
     margin-bottom: 20px;
   }
   
-  /* Half-width and full-width for row items */
   .half-width {
-    flex: 1; /* each item in row shares space equally */
+    flex: 1;
   }
   .full-width {
     width: 100%;
   }
   
-  /* Widget container */
   .dashboard-widget {
     background: #ffffff;
     padding: 20px;
@@ -344,7 +321,6 @@
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
   }
   
-  /* Title, text, buttons inside widgets */
   .dashboard-widget h3 {
     margin-bottom: 10px;
     font-size: 1.2rem;
@@ -372,10 +348,10 @@
     border: 2px solid orange;
   }
   .verification-approved {
-    border: 2px solid #4ade80; /* green */
+    border: 2px solid #4ade80;
   }
   .verification-rejected {
-    border: 2px solid #ef4444; /* red */
+    border: 2px solid #ef4444;
   }
   
   /* Limits Widget "Task-list" style progress bars */
@@ -410,7 +386,7 @@
   
   /* The container for the horizontal bar */
   .limits-progress-bar-container {
-    flex: 1; /* takes up remaining space between label and info */
+    flex: 1;
     background: #e5e7eb;
     border-radius: 10px;
     height: 10px;
@@ -418,7 +394,6 @@
     overflow: hidden;
   }
   
-  /* The colored portion of the bar that shows usage ratio */
   .limits-progress-bar {
     background: #fcd535;
     height: 100%;
@@ -428,11 +403,13 @@
   }
   
 
+
+
+
 /* Profile Container */
 .profile-container {
     width: 100%;
-    box-sizing: border-box; /* Ensure padding/border is included in total width */
-    
+    box-sizing: border-box;
     background: #ffffff;
     padding: 20px;
     border-radius: 10px;
@@ -447,7 +424,6 @@
     margin-bottom: 20px;
   }
   
-  /* Form Layout */
   .profile-form {
     display: flex;
     flex-direction: column;
@@ -524,18 +500,16 @@
     margin: 20px auto;
 }
 
-/* Transaction Container (for Deposit & Withdraw pages) */
 .transaction-container {
     width: 100%;
     box-sizing: border-box;
-    margin: 20px 0;  /* so it has spacing above/below */
+    margin: 20px 0;
     background: #ffffff;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
   }
 
-/* Transaction Title */
 .transaction-title {
     font-size: 1.5rem;
     font-weight: 700;
@@ -544,28 +518,24 @@
     text-align: center;
 }
 
-/* Transaction Form */
 .transaction-form {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-/* Transaction Field */
 .transaction-field {
     display: flex;
     flex-direction: column;
     gap: 5px;
 }
 
-/* Transaction Label */
 .transaction-label {
     font-size: 1rem;
     font-weight: 600;
     color: #333;
 }
 
-/* Transaction Input */
 .transaction-input {
     padding: 10px;
     border: 2px solid #e5e7eb;
@@ -581,7 +551,6 @@
     box-shadow: 0 0 8px rgba(252, 213, 53, 0.4);
 }
 
-/* Transaction Button */
 .transaction-btn {
     background: linear-gradient(135deg, #fcd535, #eab308);
     border: none;
@@ -600,13 +569,11 @@
 }
 
 
-/* Transaction History Page Enhancements */
 .transaction-history {
     max-width: 100%; 
     box-sizing: border-box;
   }
   
-  /* Filter Section Container */
   .transaction-filters {
     display: flex;
     flex-wrap: wrap;
@@ -615,21 +582,18 @@
     align-items: flex-end;
   }
   
-  /* Each filter field (date/type) */
   .filter-field {
     display: flex;
     flex-direction: column;
     gap: 5px;
   }
   
-  /* Filter labels */
   .filter-label {
     font-size: 0.9rem;
     font-weight: 600;
     color: #333;
   }
   
-  /* Filter inputs (date) */
   .filter-input {
     padding: 8px;
     border: 2px solid #e5e7eb;
@@ -639,7 +603,6 @@
     transition: border-color 0.3s;
   }
   
-  /* Filter selects (type) */
   .filter-select {
     padding: 8px;
     border: 2px solid #e5e7eb;
@@ -650,7 +613,6 @@
     transition: border-color 0.3s;
   }
   
-  /* Hover/focus states for filter inputs/selects */
   .filter-input:focus,
   .filter-select:focus {
     border-color: #fcd535;
@@ -658,24 +620,21 @@
     box-shadow: 0 0 6px rgba(252, 213, 53, 0.3);
   }
   
-  /* Optional: make the filter button a bit smaller to fit the row better */
   .filter-btn {
     padding: 10px 20px;
     font-size: 1rem;
-    margin-top: auto; /* aligns the button with the bottom of the fields */
+    margin-top: auto;
   }
   
-  /* Transactions Table Styles */
   .transactions-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
     background-color: #fff;
     border-radius: 8px;
-    overflow: hidden; /* ensures the radius is respected for table edges */
+    overflow: hidden; 
   }
   
-  /* Table Header */
   .transactions-table thead {
     background-color: #fcd535;
     color: #1e293b;
@@ -689,34 +648,27 @@
     border-bottom: 2px solid #e5e7eb;
   }
   
-  /* Table Body */
   .transactions-table td {
     padding: 12px;
     font-size: 0.95rem;
     border-bottom: 1px solid #e5e7eb;
   }
   
-  /* Hover effect on rows */
   .transactions-table tbody tr:hover {
     background-color: #f9fafb;
   }
   
-  /* For the "No transactions found" or error messages */
   .transactions-list p {
     font-size: 0.95rem;
     color: #555;
     margin-top: 10px;
   }
-  
-  @media (max-width: 768px) {
-    .transaction-container {
-      margin: 10px 0;
-      padding: 15px; 
-      /* Slightly smaller padding on mobile */
-    }
-  }
-  
 
+
+
+
+
+  
   .help-section {
     margin: 40px auto;
     max-width: 800px;

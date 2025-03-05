@@ -7,12 +7,12 @@ class PasswordResetsModel
 
     public function __construct()
     {
-        // Use the PDO instance from db.php
+        // Use the global PDO instance from db.php
         global $conn;
         $this->conn = $conn;
     }
 
-    // CREATE
+    // Create a new password reset record
     public function create($user_id, $token, $expires_at)
     {
         $sql = "INSERT INTO password_resets (user_id, token, expires_at, created_at, updated_at)
@@ -25,7 +25,7 @@ class PasswordResetsModel
         return $this->conn->lastInsertId();
     }
 
-    // READ - Single by ID
+    // Retrieve a reset record by its ID
     public function getResetById($id)
     {
         $sql = "SELECT * FROM password_resets WHERE id = :id LIMIT 1";
@@ -35,7 +35,7 @@ class PasswordResetsModel
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // READ - Single by Token
+    // Retrieve a reset record by the token
     public function getResetByToken($token)
     {
         $sql = "SELECT * FROM password_resets WHERE token = :token LIMIT 1";
@@ -45,7 +45,7 @@ class PasswordResetsModel
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // READ - Single by User ID
+    // Retrieve a reset record by the user ID
     public function getResetByUserId($user_id)
     {
         $sql = "SELECT * FROM password_resets WHERE user_id = :user_id LIMIT 1";
@@ -55,7 +55,7 @@ class PasswordResetsModel
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // READ - All
+    // Retrieve all password reset records
     public function getAllResets()
     {
         $sql = "SELECT * FROM password_resets";
@@ -63,7 +63,7 @@ class PasswordResetsModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // UPDATE
+    // Update an existing password reset record
     public function update($id, $user_id, $token, $expires_at)
     {
         $sql = "UPDATE password_resets
@@ -80,7 +80,7 @@ class PasswordResetsModel
         return $stmt->execute();
     }
 
-    // DELETE
+    // Delete a password reset record
     public function delete($id)
     {
         $sql = "DELETE FROM password_resets WHERE id = :id";

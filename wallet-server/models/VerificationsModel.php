@@ -7,12 +7,12 @@ class VerificationsModel
 
     public function __construct()
     {
-        // Use the PDO instance from db.php
+        // Use the global PDO instance from db.php
         global $conn;
         $this->conn = $conn;
     }
 
-    // CREATE
+    // CREATE a new verification record.
     public function create($user_id, $id_document, $is_validated, $verification_note)
     {
         $sql = "INSERT INTO verifications (
@@ -29,7 +29,7 @@ class VerificationsModel
         return $this->conn->lastInsertId();
     }
 
-    // READ - Single by Verification ID
+    // READ a verification record by its ID.
     public function getVerificationById($id)
     {
         $sql = "SELECT * FROM verifications WHERE id = :id LIMIT 1";
@@ -39,7 +39,7 @@ class VerificationsModel
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // READ - Single by User ID
+    // READ a verification record by the associated user ID.
     public function getVerificationByUserId($user_id)
     {
         $sql = "SELECT * FROM verifications WHERE user_id = :user_id LIMIT 1";
@@ -49,7 +49,7 @@ class VerificationsModel
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // READ - All
+    // READ all verification records.
     public function getAllVerifications()
     {
         $sql = "SELECT * FROM verifications";
@@ -57,7 +57,7 @@ class VerificationsModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // READ - Pending Verifications (not validated)
+    // READ all pending verification records (where is_validated is 0).
     public function getPendingVerifications()
     {
         $sql = "SELECT * FROM verifications WHERE is_validated = 0";
@@ -65,7 +65,7 @@ class VerificationsModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // UPDATE
+    // UPDATE an existing verification record.
     public function update($id, $user_id, $id_document, $is_validated, $verification_note)
     {
         $sql = "UPDATE verifications
@@ -83,7 +83,7 @@ class VerificationsModel
         return $stmt->execute();
     }
 
-    // DELETE
+    // DELETE a verification record by its ID.
     public function delete($id)
     {
         $sql = "DELETE FROM verifications WHERE id = :id";

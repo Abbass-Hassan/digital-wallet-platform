@@ -1,7 +1,8 @@
 <?php
-// withdraw.php
+// withdraw.php - Process a withdrawal request using JWT authentication and transaction limits.
 header('Content-Type: application/json');
 
+// Include required files and models
 require_once __DIR__ . '/../../connection/db.php';
 require_once __DIR__ . '/../../models/WalletsModel.php';
 require_once __DIR__ . '/../../models/VerificationsModel.php';
@@ -9,31 +10,25 @@ require_once __DIR__ . '/../../models/TransactionsModel.php';
 require_once __DIR__ . '/../../models/UsersModel.php';
 require_once __DIR__ . '/../../models/TransactionLimitsModel.php';
 require_once __DIR__ . '/../../utils/MailService.php';
-require_once __DIR__ . '/../../utils/verify_jwt.php'; // Adjust path as needed
+require_once __DIR__ . '/../../utils/verify_jwt.php';
 
-// Remove session_start() and use JWT for authentication
+// Authenticate using JWT from the Authorization header
 $headers = getallheaders();
 if (!isset($headers['Authorization'])) {
     echo json_encode(['error' => 'No authorization header provided']);
     exit;
 }
-
-// Expected header format: "Bearer <token>"
 list($bearer, $jwt) = explode(' ', $headers['Authorization']);
 if ($bearer !== 'Bearer' || !$jwt) {
     echo json_encode(['error' => 'Invalid token format']);
     exit;
 }
-
-// Replace with your secure secret key
-$jwt_secret = "CHANGE_THIS_TO_A_RANDOM_SECRET_KEY";
+$jwt_secret = "CHANGE_THIS_TO_A_RANDOM_SECRET_KEY"; // Replace with a secure key
 $decoded = verify_jwt($jwt, $jwt_secret);
 if (!$decoded) {
     echo json_encode(['error' => 'Invalid or expired token']);
     exit;
 }
-
-// Extract user ID from the JWT payload
 $userId = $decoded['id'];
 
 try {
@@ -44,34 +39,31 @@ try {
     $usersModel = new UsersModel();
     $transactionLimitsModel = new TransactionLimitsModel();
 
-    // Check verification status
+    // Ensure the user is verified
     $verification = $verificationsModel->getVerificationByUserId($userId);
     if (!$verification || $verification['is_validated'] != 1) {
         echo json_encode(['error' => 'Your account is not verified. You cannot withdraw.']);
         exit;
     }
 
-    // Get withdrawal amount from input
+    // Get and validate the withdrawal amount
     $data = json_decode(file_get_contents("php://input"), true);
     $amount = floatval($data['amount']);
-
     if ($amount <= 0) {
         echo json_encode(['error' => 'Invalid withdrawal amount']);
         exit;
     }
 
-    // Fetch user's tier
+    // Get user's tier and corresponding transaction limits
     $user = $usersModel->getUserById($userId);
     $tier = $user ? $user['tier'] : 'regular';
-
-    // Fetch limits for this tier
     $limits = $transactionLimitsModel->getTransactionLimitByTier($tier);
     if (!$limits) {
         echo json_encode(['error' => 'Transaction limits not defined for your tier']);
         exit;
     }
 
-    // Calculate current usage
+    // Calculate current usage for daily, weekly, and monthly transactions
     try {
         $dailyStmt = $conn->prepare("
             SELECT COALESCE(SUM(amount), 0) AS total 
@@ -108,7 +100,7 @@ try {
         exit;
     }
 
-    // Check if new withdrawal would exceed limits
+    // Check if the new withdrawal exceeds transaction limits
     if (($dailyTotal + $amount) > floatval($limits['daily_limit'])) {
         echo json_encode(['error' => 'Daily withdrawal limit exceeded']);
         exit;
@@ -122,7 +114,7 @@ try {
         exit;
     }
 
-    // Check wallet balance and update
+    // Verify wallet balance and update it if sufficient
     $wallet = $walletsModel->getWalletByUserId($userId);
     if (!$wallet) {
         echo json_encode(['error' => 'Wallet not found']);
@@ -132,17 +124,14 @@ try {
         echo json_encode(['error' => 'Insufficient funds']);
         exit;
     }
-
     $newBalance = floatval($wallet['balance']) - $amount;
     $walletsModel->update($wallet['id'], $userId, $newBalance);
 
-    // Insert transaction record for withdrawal (recipient_id is NULL)
+    // Record the withdrawal transaction
     $transactionsModel->create($userId, NULL, 'withdrawal', $amount);
 
-    // Fetch user's email for confirmation
+    // Send an email confirmation if the user's email is available
     $userEmail = $user ? $user['email'] : null;
-
-    // Send email confirmation if email is available
     if ($userEmail) {
         $mailer = new MailService();
         $subject = "Withdrawal Confirmation";
@@ -154,6 +143,7 @@ try {
         $mailer->sendMail($userEmail, $subject, $body);
     }
 
+    // Return the new balance and a success message
     echo json_encode(['newBalance' => $newBalance, 'message' => 'Withdrawal successful']);
 } catch (PDOException $e) {
     echo json_encode(['error' => $e->getMessage()]);

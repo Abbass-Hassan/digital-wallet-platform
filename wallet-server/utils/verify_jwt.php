@@ -1,38 +1,34 @@
 <?php
-// verify_jwt.php
 function verify_jwt(string $jwt, string $secret)
 {
-    // Split the token
+    // Split the token into header, payload, and signature
     $tokenParts = explode('.', $jwt);
     if (count($tokenParts) !== 3) {
         return false;
     }
-
     list($base64Header, $base64Payload, $base64Signature) = $tokenParts;
 
-    // Decode
+    // Decode header, payload, and signature using Base64Url
     $header = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $base64Header)), true);
     $payload = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $base64Payload)), true);
     $signature = base64_decode(str_replace(['-', '_'], ['+', '/'], $base64Signature));
 
-    // Check algorithm
+    // Ensure the token uses HS256 algorithm
     if ($header['alg'] !== 'HS256') {
         return false;
     }
 
-    // Build signature
+    // Generate a valid signature using the provided secret
     $validSignature = hash_hmac('sha256', $base64Header . "." . $base64Payload, $secret, true);
-
     if (!hash_equals($validSignature, $signature)) {
         return false;
     }
 
-    // Check if token is expired
-    $now = time();
-    if ($payload['exp'] < $now) {
-        return false; // Token has expired
+    // Check if the token has expired
+    if ($payload['exp'] < time()) {
+        return false;
     }
 
-    // If all checks pass, return the payload
+    // Token is valid; return its payload
     return $payload;
 }

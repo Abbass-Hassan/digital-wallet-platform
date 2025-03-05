@@ -7,12 +7,12 @@ class TransactionsModel
 
     public function __construct()
     {
-        // Use the PDO instance from db.php
+        // Use the global PDO instance from db.php
         global $conn;
         $this->conn = $conn;
     }
 
-    // CREATE
+    // CREATE a new transaction record.
     public function create($sender_id, $recipient_id, $type, $amount)
     {
         $sql = "INSERT INTO transactions (sender_id, recipient_id, transaction_type, amount, created_at)
@@ -26,7 +26,7 @@ class TransactionsModel
         return $this->conn->lastInsertId();
     }
 
-    // READ - Single by Transaction ID
+    // READ - Retrieve a single transaction by its ID.
     public function getTransactionById($id)
     {
         $sql = "SELECT * FROM transactions WHERE id = :id LIMIT 1";
@@ -36,7 +36,7 @@ class TransactionsModel
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // READ - All Transactions
+    // READ - Retrieve all transactions.
     public function getAllTransactions()
     {
         $sql = "SELECT * FROM transactions";
@@ -44,7 +44,7 @@ class TransactionsModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // READ - Transactions by Sender ID
+    // READ - Retrieve transactions filtered by sender ID.
     public function getTransactionsBySenderId($sender_id)
     {
         $sql = "SELECT * FROM transactions WHERE sender_id = :sender_id";
@@ -54,7 +54,7 @@ class TransactionsModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // READ - Transactions by Recipient ID
+    // READ - Retrieve transactions filtered by recipient ID.
     public function getTransactionsByRecipientId($recipient_id)
     {
         $sql = "SELECT * FROM transactions WHERE recipient_id = :recipient_id";
@@ -64,7 +64,7 @@ class TransactionsModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // UPDATE
+    // UPDATE - Update an existing transaction record.
     public function update($id, $sender_id, $recipient_id, $type, $amount)
     {
         $sql = "UPDATE transactions
@@ -82,7 +82,7 @@ class TransactionsModel
         return $stmt->execute();
     }
 
-    // DELETE
+    // DELETE - Remove a transaction record.
     public function delete($id)
     {
         $sql = "DELETE FROM transactions WHERE id = :id";

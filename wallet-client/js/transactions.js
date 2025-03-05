@@ -1,52 +1,42 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Retrieve the JWT from localStorage
+    // Ensure user is authenticated; redirect to login if no JWT is found
     const token = localStorage.getItem('jwt');
     if (!token) {
-        // Redirect to login if no token is found
         window.location.href = 'login.html';
         return;
     }
 
-    // Axios configuration with JWT in the Authorization header
+    // Configure Axios with the JWT for API calls
     const axiosConfig = {
         headers: {
             'Authorization': `Bearer ${token}`
         }
     };
 
-    const filterBtn    = document.getElementById('filterBtn');
-    const filterDate   = document.getElementById('filterDate');
-    const typeSelect   = document.getElementById('typeSelect');
+    // DOM elements for filters and transaction display
+    const filterBtn = document.getElementById('filterBtn');
+    const filterDate = document.getElementById('filterDate');
+    const typeSelect = document.getElementById('typeSelect');
     const transactionsList = document.getElementById('transactionsList');
+    let loggedInUserId = null; // Will be set after fetching transactions
 
-    let loggedInUserId = null; // We'll set this after we fetch from the server
-
-    // Optionally load all transactions on page load
+    // Load transactions on page load and when the filter button is clicked
     fetchTransactions();
+    filterBtn.addEventListener('click', fetchTransactions);
 
-    filterBtn.addEventListener('click', function() {
-        fetchTransactions();
-    });
-
+    // Fetch transactions with optional filtering parameters
     function fetchTransactions() {
-        // Build query parameters
         const params = new URLSearchParams();
-        if (filterDate.value) {
-            params.append('date', filterDate.value);
-        }
-        if (typeSelect.value) {
-            params.append('type', typeSelect.value);
-        }
+        if (filterDate.value) params.append('date', filterDate.value);
+        if (typeSelect.value) params.append('type', typeSelect.value);
 
-        axios.get('http://13.38.91.228/user/v1/get_transactions.php?' + params.toString(), axiosConfig)
+        axios.get('http://localhost/digital-wallet-platform/wallet-server/user/v1/get_transactions.php?' + params.toString(), axiosConfig)
             .then(response => {
                 if (response.data.error) {
                     transactionsList.innerHTML = `<p>Error: ${response.data.error}</p>`;
                 } else {
-                    const txns = response.data.transactions;
-                    // Store the userId from the server response
                     loggedInUserId = response.data.userId || null;
-                    renderTransactions(txns);
+                    renderTransactions(response.data.transactions);
                 }
             })
             .catch(error => {
@@ -55,6 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
+    // Render the transactions in a table format
     function renderTransactions(transactions) {
         if (!transactions || transactions.length === 0) {
             transactionsList.innerHTML = "<p>No transactions found.</p>";
@@ -74,24 +65,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         transactions.forEach(tx => {
             const dateStr = new Date(tx.created_at).toLocaleString();
-            let details   = '';
-
-            switch (tx.transaction_type) {
-                case 'deposit':
-                    details = ''; // No need to show sender/recipient
-                    break;
-                case 'withdrawal':
-                    details = ''; // No need to show sender/recipient
-                    break;
-                case 'transfer':
-                    // If I'm the sender, show "To: recipient_email"
-                    // If I'm the recipient, show "From: sender_email"
-                    if (parseInt(tx.sender_id) === parseInt(loggedInUserId)) {
-                        details = `To: ${tx.recipient_email || 'N/A'}`;
-                    } else if (parseInt(tx.recipient_id) === parseInt(loggedInUserId)) {
-                        details = `From: ${tx.sender_email || 'N/A'}`;
-                    }
-                    break;
+            let details = '';
+            // For transfers, indicate if the user is the sender or recipient
+            if (tx.transaction_type === 'transfer') {
+                if (parseInt(tx.sender_id) === parseInt(loggedInUserId)) {
+                    details = `To: ${tx.recipient_email || 'N/A'}`;
+                } else if (parseInt(tx.recipient_id) === parseInt(loggedInUserId)) {
+                    details = `From: ${tx.sender_email || 'N/A'}`;
+                }
             }
 
             html += `

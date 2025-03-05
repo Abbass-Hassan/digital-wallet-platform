@@ -1,14 +1,15 @@
 <?php
-// request_password_reset.php
+// request_password_reset.php - Handles password reset requests securely.
 header("Content-Type: application/json");
+
 require_once __DIR__ . '/../../connection/db.php';
 require_once __DIR__ . '/../../models/UsersModel.php';
 require_once __DIR__ . '/../../models/PasswordResetsModel.php';
 require_once __DIR__ . '/../../utils/MailService.php';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // Retrieve and validate the email input
     $email = trim($_POST["email"]);
-
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         echo json_encode(["error" => "Invalid email format"]);
         exit;
@@ -19,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $usersModel = new UsersModel();
         $passwordResetsModel = new PasswordResetsModel();
 
-        // Check if user exists
+        // Check if a user with the provided email exists
         $user = null;
         $allUsers = $usersModel->getAllUsers();
         foreach ($allUsers as $u) {
@@ -29,24 +30,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
         }
 
-        // Always return the same message for security,
-        // but proceed only if the user exists.
+        // Always return the same response for security reasons
         $responseMessage = "If an account with that email exists, a password reset link has been sent.";
 
         if ($user) {
             $user_id = $user['id'];
-            // Generate a secure token (32 characters hex string)
+            // Generate a secure token and set expiration time (1 hour)
             $token = bin2hex(random_bytes(16));
-            // Set expiration to 1 hour from now
             $expires_at = date("Y-m-d H:i:s", strtotime("+1 hour"));
 
-            // Insert token into password_resets table
+            // Insert the reset token into the password_resets table
             $passwordResetsModel->create($user_id, $token, $expires_at);
 
-            // Build the reset link (update the URL to match your environment)
+            // Build the reset link (update URL as needed)
             $resetLink = "http://localhost/digital-wallet-platform/wallet-client/reset_password.html?token=" . urlencode($token);
 
-            // Send email using MailService
+            // Send password reset email using MailService
             $mailer = new MailService();
             $subject = "Password Reset Request";
             $body = "

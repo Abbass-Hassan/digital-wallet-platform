@@ -1,6 +1,4 @@
 <?php
-// MailService.php in wallet-server/utils
-
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -13,15 +11,15 @@ class MailService
 
     public function __construct()
     {
-        // Load mail configuration
-        // Adjust path if mail_config.php is in a different folder
+        // Load mail configuration settings
         $config = require __DIR__ . '/../connection/mail_config.php';
 
+        // Initialize PHPMailer
         $this->mailer = new PHPMailer(true);
-
         $this->mailer->SMTPDebug = 0;
+
         try {
-            //Server settings
+            // Configure SMTP settings
             $this->mailer->isSMTP();
             $this->mailer->Host       = $config['host'];
             $this->mailer->SMTPAuth   = true;
@@ -30,25 +28,31 @@ class MailService
             $this->mailer->SMTPSecure = 'tls'; // or 'ssl' if using port 465
             $this->mailer->Port       = $config['port'];
 
-            // Sender info
+            // Set sender information
             $this->mailer->setFrom($config['from_email'], $config['from_name']);
         } catch (Exception $e) {
-            // Handle mailer initialization error if needed
+            // Handle initialization error if needed
         }
     }
 
+    /**
+     * Sends an HTML email to the specified recipient.
+     *
+     * @param string $to Recipient email address.
+     * @param string $subject Email subject.
+     * @param string $body HTML email body.
+     * @return bool True if the email was sent, false otherwise.
+     */
     public function sendMail($to, $subject, $body)
     {
         try {
-            // Clear any previous addresses (in case this mailer is reused)
+            // Clear previous recipients and add new one
             $this->mailer->clearAddresses();
-
-            // Add the new recipient
             $this->mailer->addAddress($to);
 
-            // Subject & Body
+            // Set email subject and HTML body
             $this->mailer->Subject = $subject;
-            $this->mailer->isHTML(true); // Use HTML emails
+            $this->mailer->isHTML(true);
             $this->mailer->Body    = $body;
 
             // Send the email

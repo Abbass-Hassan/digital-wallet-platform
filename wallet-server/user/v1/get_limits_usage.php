@@ -1,46 +1,41 @@
 <?php
 header("Content-Type: application/json");
 
+// Include required files and models
 require_once __DIR__ . '/../../connection/db.php';
 require_once __DIR__ . '/../../models/UsersModel.php';
 require_once __DIR__ . '/../../models/TransactionLimitsModel.php';
-require_once __DIR__ . '/../../utils/verify_jwt.php'; // Adjust path as needed
+require_once __DIR__ . '/../../utils/verify_jwt.php'; // Adjust path if needed
 
-// Get the Authorization header
+// --- JWT Authentication ---
+// Retrieve and validate the JWT from the Authorization header
 $headers = getallheaders();
 if (!isset($headers['Authorization'])) {
     echo json_encode(["error" => "No authorization header provided."]);
     exit;
 }
-
-// Expected format: "Bearer <token>"
 list($bearer, $jwt) = explode(' ', $headers['Authorization']);
 if ($bearer !== 'Bearer' || !$jwt) {
     echo json_encode(["error" => "Invalid token format."]);
     exit;
 }
-
-// Verify and decode the JWT
 $jwt_secret = "CHANGE_THIS_TO_A_RANDOM_SECRET_KEY"; // Use a secure secret in production
 $decoded = verify_jwt($jwt, $jwt_secret);
 if (!$decoded) {
     echo json_encode(["error" => "Invalid or expired token."]);
     exit;
 }
-
-// Extract the user ID from the token payload
 $userId = $decoded['id'];
 
+// --- Fetch User Tier and Limits ---
+// Initialize models and retrieve user's tier from the users table, then fetch transaction limits based on tier
 try {
-    // Initialize models
     $usersModel = new UsersModel();
     $transactionLimitsModel = new TransactionLimitsModel();
 
-    // Get the user's tier from the users table
     $user = $usersModel->getUserById($userId);
     $tier = $user ? $user['tier'] : 'regular';
 
-    // Get limits for the user's tier
     $limits = $transactionLimitsModel->getTransactionLimitByTier($tier);
     if (!$limits) {
         echo json_encode(["error" => "Transaction limits not defined for your tier"]);
@@ -51,7 +46,8 @@ try {
     exit;
 }
 
-// Keep calculations unchanged
+// --- Calculate Transaction Usage ---
+// Query the database to calculate the total used amounts for withdrawals and transfers for daily, weekly, and monthly periods.
 try {
     $dailyStmt = $conn->prepare("
         SELECT COALESCE(SUM(amount), 0) AS total 
@@ -88,12 +84,14 @@ try {
     exit;
 }
 
-// Calculate remaining amounts
+// --- Calculate Remaining Limits ---
+// Determine the remaining amounts by subtracting used amounts from the allowed limits.
 $dailyRemaining = max(floatval($limits['daily_limit']) - $dailyUsed, 0);
 $weeklyRemaining = max(floatval($limits['weekly_limit']) - $weeklyUsed, 0);
 $monthlyRemaining = max(floatval($limits['monthly_limit']) - $monthlyUsed, 0);
 
-// Return the limits usage data
+// --- Return the Results ---
+// Output the calculated usage and remaining amounts as a JSON response.
 echo json_encode([
     "dailyUsed" => $dailyUsed,
     "dailyLimit" => floatval($limits['daily_limit']),
@@ -105,3 +103,4 @@ echo json_encode([
     "monthlyLimit" => floatval($limits['monthly_limit']),
     "monthlyRemaining" => $monthlyRemaining
 ]);
+?>

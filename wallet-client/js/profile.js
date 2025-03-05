@@ -1,20 +1,20 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Retrieve the JWT from localStorage
+    // Check for JWT token; if missing, redirect to login
     const token = localStorage.getItem('jwt');
     if (!token) {
         window.location.href = 'login.html';
         return;
     }
 
-    // Create axios configuration with the Authorization header
+    // Set up axios configuration with the JWT
     const axiosConfig = {
         headers: {
             'Authorization': `Bearer ${token}`
         }
     };
 
-    // Fetch the profile using the JWT in the header
-    axios.get("http://13.38.91.228/digital-wallet-platform/wallet-server/user/v1/get_profile.php", axiosConfig)
+    // Fetch and populate the user profile fields
+    axios.get("http://localhost/digital-wallet-platform/wallet-server/user/v1/get_profile.php", axiosConfig)
         .then(response => {
             if (response.data.success) {
                 document.getElementById("fullName").value = response.data.user.full_name || "";
@@ -31,10 +31,11 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error("Error fetching profile:", error);
         });
 
-    // Handle the profile update form submission
+    // Handle profile update form submission
     document.getElementById("profileForm").addEventListener("submit", function (e) {
         e.preventDefault();
-        
+
+        // Build form data from input fields
         const formData = {
             full_name: document.getElementById("fullName").value,
             date_of_birth: document.getElementById("dob").value,
@@ -44,18 +45,17 @@ document.addEventListener("DOMContentLoaded", function () {
             country: document.getElementById("country").value
         };
 
-        axios.post("http://13.38.91.228/user/v1/update_profile.php", formData, axiosConfig)
+        // Update profile via API call; on success, redirect to dashboard
+        axios.post("http://localhost/digital-wallet-platform/wallet-server/user/v1/update_profile.php", formData, axiosConfig)
             .then(response => {
                 if (response.data.success) {
-                    alert("Profile updated successfully!");
                     window.location.href = "dashboard.html";
                 } else {
-                    alert("Error: " + response.data.message);
+                    console.error("Error updating profile:", response.data.message);
                 }
             })
             .catch(error => {
                 console.error("Error updating profile:", error);
-                alert("An error occurred while updating the profile.");
             });
     });
 });

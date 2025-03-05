@@ -7,12 +7,12 @@ class UsersModel
 
     public function __construct()
     {
-        // Use the PDO instance from db.php
+        // Use the global PDO instance from db.php
         global $conn;
         $this->conn = $conn;
     }
 
-    // CREATE
+    // CREATE a new user record.
     public function create($email, $password, $role)
     {
         $sql = "INSERT INTO users (email, password, role, created_at, updated_at)
@@ -25,7 +25,7 @@ class UsersModel
         return $this->conn->lastInsertId();
     }
 
-    // READ - Single
+    // READ a single user by ID.
     public function getUserById($id)
     {
         $sql = "SELECT * FROM users WHERE id = :id LIMIT 1";
@@ -35,7 +35,7 @@ class UsersModel
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // READ - All
+    // READ all users.
     public function getAllUsers()
     {
         $sql = "SELECT * FROM users";
@@ -43,7 +43,7 @@ class UsersModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // UPDATE
+    // UPDATE an existing user record.
     public function update($id, $email, $password, $role)
     {
         $sql = "UPDATE users
@@ -60,7 +60,7 @@ class UsersModel
         return $stmt->execute();
     }
 
-    // DELETE
+    // DELETE a user record by ID.
     public function delete($id)
     {
         $sql = "DELETE FROM users WHERE id = :id";

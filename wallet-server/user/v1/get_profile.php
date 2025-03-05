@@ -1,4 +1,5 @@
 <?php
+// Set CORS and JSON response headers
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
@@ -10,53 +11,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-// REMOVE session_start(); no longer needed for JWT-based auth
-
+// Include required files and models
 require_once __DIR__ . '/../../connection/db.php';
 require_once __DIR__ . '/../../models/UserProfilesModel.php';
 require_once __DIR__ . '/../../models/UsersModel.php';
 require_once __DIR__ . '/../../utils/verify_jwt.php'; // Adjust path if needed
 
-// Retrieve the Authorization header
+// --- JWT Authentication ---
+// Retrieve the Authorization header and verify JWT
 $headers = getallheaders();
 if (!isset($headers['Authorization'])) {
     echo json_encode(["success" => false, "message" => "No authorization header."]);
     exit;
 }
-
-// Expecting format: "Authorization: Bearer <token>"
 list($bearer, $jwt) = explode(' ', $headers['Authorization']);
 if ($bearer !== 'Bearer' || !$jwt) {
     echo json_encode(["success" => false, "message" => "Invalid token format."]);
     exit;
 }
 
-// Verify/Decode the JWT
 $jwt_secret = "CHANGE_THIS_TO_A_RANDOM_SECRET_KEY"; // Replace with your secure key
-$decoded = verify_jwt($jwt, $jwt_secret); // This function should return payload if valid, or false if invalid/expired
-
+$decoded = verify_jwt($jwt, $jwt_secret);
 if (!$decoded) {
     echo json_encode(["success" => false, "message" => "Invalid or expired token."]);
     exit;
 }
-
-// Extract user ID from the decoded token payload
 $user_id = $decoded['id'];
 
+// --- Fetch User Profile ---
+// Initialize models and retrieve user profile and tier information
 try {
-    // Initialize models
     $userProfilesModel = new UserProfilesModel();
     $usersModel = new UsersModel();
 
-    // Fetch user profile
     $userProfile = $userProfilesModel->getProfileByUserId($user_id);
-    
     if (!$userProfile) {
         echo json_encode(["success" => false, "message" => "User profile not found."]);
         exit;
     }
-
-    // If you have a 'tier' column in 'users' table, fetch it
+    // Fetch user tier from the users table; default to 'regular'
     $user = $usersModel->getUserById($user_id);
     $userProfile['tier'] = $user ? $user['tier'] : 'regular';
 
@@ -64,3 +57,4 @@ try {
 } catch (PDOException $e) {
     echo json_encode(["success" => false, "message" => "Database error: " . $e->getMessage()]);
 }
+?>

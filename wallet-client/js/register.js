@@ -6,25 +6,15 @@ document.getElementById('registerForm').addEventListener('submit', async functio
 
     try {
         const response = await axios.post(this.action, formData);
-        // Log the response to debug if needed
         console.log("Register response:", response.data);
-
-        if (response.data && response.data.message) {
-            alert(response.data.message);
-
-            if (response.data.status === 'success') {
-                // If the server returned a token, store it
-                if (response.data.token) {
-                    localStorage.setItem('jwt', response.data.token);
-                }
-                // Redirect to verification page
-                window.location.href = '/digital-wallet-platform/wallet-client/verification.html';
+        if (response.data && response.data.status === 'success') {
+            // Store JWT if provided and redirect to verification page
+            if (response.data.token) {
+                localStorage.setItem('jwt', response.data.token);
             }
-        } else {
-            alert("Unexpected response from server.");
+            window.location.href = '/digital-wallet-platform/wallet-client/verification.html';
         }
     } catch (error) {
-        console.error("Error:", error);
-        alert("An error occurred while processing your registration.");
+        console.error("Error processing registration:", error);
     }
 });

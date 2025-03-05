@@ -7,12 +7,12 @@ class WalletsModel
 
     public function __construct()
     {
-        // Use the PDO instance from db.php
+        // Use the global PDO instance from db.php for database operations
         global $conn;
         $this->conn = $conn;
     }
 
-    // CREATE
+    // CREATE: Inserts a new wallet record for a user with an initial balance.
     public function create($user_id, $balance)
     {
         $sql = "INSERT INTO wallets (user_id, balance, created_at, updated_at)
@@ -24,7 +24,7 @@ class WalletsModel
         return $this->conn->lastInsertId();
     }
 
-    // READ - Single by Wallet ID
+    // READ: Retrieve a wallet record by its wallet ID.
     public function getWalletById($id)
     {
         $sql = "SELECT * FROM wallets WHERE id = :id LIMIT 1";
@@ -34,7 +34,7 @@ class WalletsModel
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // READ - Single by User ID
+    // READ: Retrieve a wallet record by the associated user ID.
     public function getWalletByUserId($user_id)
     {
         $sql = "SELECT * FROM wallets WHERE user_id = :user_id LIMIT 1";
@@ -44,7 +44,7 @@ class WalletsModel
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // READ - All
+    // READ: Retrieve all wallet records.
     public function getAllWallets()
     {
         $sql = "SELECT * FROM wallets";
@@ -52,7 +52,7 @@ class WalletsModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // UPDATE
+    // UPDATE: Update an existing wallet record with a new balance.
     public function update($id, $user_id, $balance)
     {
         $sql = "UPDATE wallets
@@ -67,7 +67,7 @@ class WalletsModel
         return $stmt->execute();
     }
 
-    // DELETE
+    // DELETE: Remove a wallet record by its wallet ID.
     public function delete($id)
     {
         $sql = "DELETE FROM wallets WHERE id = :id";

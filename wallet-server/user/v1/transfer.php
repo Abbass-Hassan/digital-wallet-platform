@@ -1,61 +1,65 @@
 <?php
+// Set response headers for CORS and JSON content
 header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+// Include dependencies and models
 require_once __DIR__ . '/../../connection/db.php';
 require_once __DIR__ . '/../../models/UsersModel.php';
 require_once __DIR__ . '/../../models/WalletsModel.php';
 require_once __DIR__ . '/../../models/TransactionsModel.php';
 require_once __DIR__ . '/../../models/TransactionLimitsModel.php';
 require_once __DIR__ . '/../../utils/MailService.php';
-require_once __DIR__ . '/../../utils/verify_jwt.php'; // Adjust path as needed
+require_once __DIR__ . '/../../utils/verify_jwt.php';
 
-// Remove session_start() and use JWT for authentication.
+// Authenticate sender using JWT from the Authorization header
 $headers = getallheaders();
 if (!isset($headers['Authorization'])) {
     echo json_encode(["error" => "No authorization header provided."]);
     exit;
 }
-
-// Expected header format: "Bearer <token>"
 list($bearer, $jwt) = explode(' ', $headers['Authorization']);
 if ($bearer !== 'Bearer' || !$jwt) {
     echo json_encode(["error" => "Invalid token format."]);
     exit;
 }
-
 $jwt_secret = "CHANGE_THIS_TO_A_RANDOM_SECRET_KEY"; // Use your secure secret here.
 $decoded = verify_jwt($jwt, $jwt_secret);
 if (!$decoded) {
     echo json_encode(["error" => "Invalid or expired token."]);
     exit;
 }
-
-// Extract sender's user ID from the JWT payload.
 $sender_id = $decoded['id'];
 
-// Read the JSON input.
+// Read and validate JSON input data
 $data = json_decode(file_get_contents("php://input"), true);
 if (!isset($data['recipient_email']) || !isset($data['amount'])) {
     echo json_encode(["error" => "Invalid input."]);
     exit;
 }
-
 $recipient_email = trim($data['recipient_email']);
 $amount = floatval($data['amount']);
-
 if ($amount <= 0) {
     echo json_encode(["error" => "Invalid transfer amount."]);
     exit;
 }
 
 try {
-    // Initialize models.
+    // Initialize required models
     $usersModel = new UsersModel();
     $walletsModel = new WalletsModel();
     $transactionsModel = new TransactionsModel();
     $transactionLimitsModel = new TransactionLimitsModel();
 
-    // Check if the recipient exists (search by email).
+    // Look up recipient by email (looping through all users for simplicity)
     $recipient = null;
     $allUsers = $usersModel->getAllUsers();
     foreach ($allUsers as $u) {
@@ -64,42 +68,36 @@ try {
             break;
         }
     }
-
     if (!$recipient) {
         echo json_encode(["error" => "Recipient not found."]);
         exit;
     }
-
     $recipient_id = $recipient['id'];
-
-    // Prevent transferring to self.
     if ($recipient_id == $sender_id) {
         echo json_encode(["error" => "You cannot transfer funds to yourself."]);
         exit;
     }
 
-    // Check the sender's wallet balance.
+    // Check sender's wallet balance
     $sender_wallet = $walletsModel->getWalletByUserId($sender_id);
     if (!$sender_wallet || floatval($sender_wallet['balance']) < $amount) {
         echo json_encode(["error" => "Insufficient funds."]);
         exit;
     }
 
-    // Fetch sender's tier.
+    // Retrieve sender's tier and corresponding transaction limits
     $user = $usersModel->getUserById($sender_id);
     $tier = $user ? $user['tier'] : 'regular';
-
-    // Fetch limits for this tier.
     $limits = $transactionLimitsModel->getTransactionLimitByTier($tier);
     if (!$limits) {
         echo json_encode(["error" => "Transaction limits not defined for your tier"]);
         exit;
     }
 
-    // Keep limit calculations unchanged.
+    // Calculate current transfer/withdrawal usage (daily, weekly, monthly)
     try {
         $dailyStmt = $conn->prepare("
-            SELECT COALESCE(SUM(amount),0) AS total 
+            SELECT COALESCE(SUM(amount), 0) AS total 
             FROM transactions 
             WHERE sender_id = :user_id 
               AND DATE(created_at) = CURDATE() 
@@ -109,7 +107,7 @@ try {
         $dailyTotal = floatval($dailyStmt->fetch(PDO::FETCH_ASSOC)['total']);
 
         $weeklyStmt = $conn->prepare("
-            SELECT COALESCE(SUM(amount),0) AS total 
+            SELECT COALESCE(SUM(amount), 0) AS total 
             FROM transactions 
             WHERE sender_id = :user_id 
               AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1) 
@@ -119,7 +117,7 @@ try {
         $weeklyTotal = floatval($weeklyStmt->fetch(PDO::FETCH_ASSOC)['total']);
 
         $monthlyStmt = $conn->prepare("
-            SELECT COALESCE(SUM(amount),0) AS total 
+            SELECT COALESCE(SUM(amount), 0) AS total 
             FROM transactions 
             WHERE sender_id = :user_id 
               AND MONTH(created_at) = MONTH(CURDATE()) 
@@ -133,7 +131,7 @@ try {
         exit;
     }
 
-    // Check limits: For transfers, we apply limits like withdrawals.
+    // Enforce transaction limits
     if (($dailyTotal + $amount) > floatval($limits['daily_limit'])) {
         echo json_encode(["error" => "Daily transfer/withdrawal limit exceeded"]);
         exit;
@@ -147,33 +145,30 @@ try {
         exit;
     }
 
-    // Begin a database transaction to ensure atomic updates.
+    // Begin transaction for atomicity
     $conn->beginTransaction();
 
     try {
-        // Deduct the transfer amount from the sender's wallet.
+        // Deduct amount from sender's wallet
         $newSenderBalance = floatval($sender_wallet['balance']) - $amount;
         $walletsModel->update($sender_wallet['id'], $sender_id, $newSenderBalance);
 
-        // Add the transfer amount to the recipient's wallet.
+        // Credit recipient's wallet; create a wallet if needed
         $recipient_wallet = $walletsModel->getWalletByUserId($recipient_id);
         if (!$recipient_wallet) {
-            // If the recipient doesn't have a wallet, create one.
             $walletsModel->create($recipient_id, $amount);
         } else {
             $newRecipientBalance = floatval($recipient_wallet['balance']) + $amount;
             $walletsModel->update($recipient_wallet['id'], $recipient_id, $newRecipientBalance);
         }
 
-        // Log the transaction.
+        // Log the transfer transaction
         $transactionsModel->create($sender_id, $recipient_id, 'transfer', $amount);
 
         $conn->commit();
 
-        // Send email confirmations.
+        // Send email confirmations to sender and recipient
         $mailer = new MailService();
-
-        // Email to sender.
         $subjectSender = "Transfer Confirmation";
         $bodySender = "
             <h1>Transfer Successful</h1>
@@ -182,7 +177,6 @@ try {
         ";
         $mailer->sendMail($user['email'], $subjectSender, $bodySender);
 
-        // Email to recipient.
         $subjectRecipient = "Funds Received";
         $bodyRecipient = "
             <h1>You've Received Funds</h1>

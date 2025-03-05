@@ -1,45 +1,38 @@
 document.getElementById('depositForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
-    // Retrieve the JWT from localStorage
+    // Retrieve JWT from localStorage and redirect if missing
     const token = localStorage.getItem('jwt');
     if (!token) {
-        // If no token is found, redirect to login
         window.location.href = 'login.html';
         return;
     }
 
+    // Validate deposit amount input
     const depositAmount = parseFloat(document.getElementById('depositAmount').value);
     if (isNaN(depositAmount) || depositAmount <= 0) {
-        alert("Please enter a valid deposit amount.");
+        // Invalid deposit amount; exit submission
         return;
     }
 
-    // Include the JWT in the Authorization header
+    // Make deposit API call with JWT in the header
     axios.post(
-        'http://13.38.91.228/user/v1/deposit.php',
+        'http://localhost/digital-wallet-platform/wallet-server/user/v1/deposit.php',
         { amount: depositAmount },
         {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+            headers: { 'Authorization': `Bearer ${token}` }
         }
     )
     .then(function(response) {
         if (response.data.error) {
-            alert(response.data.error);
-            // If token is invalid or expired, you might force logout here:
-            // if (response.data.error === 'Invalid or expired token') {
-            //     localStorage.removeItem('jwt');
-            //     window.location.href = 'login.html';
-            // }
+            // Handle deposit error (e.g., invalid token or other errors)
         } else {
-            // If deposit is successful, redirect to dashboard or show success message
+            // On successful deposit, redirect to dashboard
             window.location.href = "dashboard.html";
         }
     })
     .catch(function(error) {
         console.error("Error during deposit:", error);
-        alert("An error occurred. Please try again later.");
+        // Handle network or unexpected errors
     });
 });

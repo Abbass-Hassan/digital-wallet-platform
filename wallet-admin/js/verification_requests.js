@@ -1,13 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Retrieve the admin JWT from localStorage
+    // Retrieve the admin JWT from localStorage; if missing, redirect to login.
     const token = localStorage.getItem("admin_jwt");
     if (!token) {
-        // Redirect to admin login if no token is found
         window.location.href = "login.html";
         return;
     }
     
-    // Create an axios configuration with the Authorization header
+    // Create Axios configuration with the Authorization header.
     const axiosConfig = {
         headers: {
             "Authorization": `Bearer ${token}`,
@@ -17,12 +16,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const tableBody = document.getElementById("verificationRequestsBody");
 
+    // Fetch pending verification requests and update the table.
     function fetchRequests() {
-        axios.get("http://13.38.91.228/admin/v1/verification_requests.php", axiosConfig)
+        axios.get("http://localhost/digital-wallet-platform/wallet-server/admin/v1/verification_requests.php", axiosConfig)
             .then(response => {
                 if (response.data.status === "success") {
                     tableBody.innerHTML = ""; // Clear existing rows
-
                     response.data.data.forEach(request => {
                         const row = document.createElement("tr");
                         row.innerHTML = `
@@ -35,7 +34,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         `;
                         tableBody.appendChild(row);
                     });
-
                     addActionListeners();
                 } else {
                     tableBody.innerHTML = `<tr><td colspan="3">No pending requests found.</td></tr>`;
@@ -47,13 +45,13 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
+    // Add click event listeners to approve and reject buttons.
     function addActionListeners() {
         document.querySelectorAll(".approve-btn").forEach(button => {
             button.addEventListener("click", function () {
                 updateVerificationStatus(this.dataset.userId, 1);
             });
         });
-
         document.querySelectorAll(".reject-btn").forEach(button => {
             button.addEventListener("click", function () {
                 updateVerificationStatus(this.dataset.userId, -1);
@@ -61,13 +59,14 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // Update verification status and refresh the requests table.
     function updateVerificationStatus(user_id, is_validated) {
         if (!user_id) {
-            alert("User ID missing.");
+            console.error("User ID missing.");
             return;
         }
-
-        axios.post("http://13.38.91.228/admin/v1/update_verification.php", 
+        axios.post(
+            "http://localhost/digital-wallet-platform/wallet-server/admin/v1/update_verification.php", 
             {
                 user_id: user_id,
                 is_validated: is_validated
@@ -81,22 +80,15 @@ document.addEventListener("DOMContentLoaded", function () {
         )
         .then(response => {
             const data = response.data;
-
-            if (data && data.message) {
-                alert(data.message);
-            } else {
-                alert("Unexpected response from server.");
-            }
-
-            // Refresh the table after the update
+            console.log(data.message || "Unexpected response from server.");
+            // Refresh the table after the update.
             fetchRequests();
         })
         .catch(error => {
             console.error("Error updating verification status:", error);
-            alert("Failed to update status.");
         });
     }
 
-    // Initial load of verification requests
+    // Initial load of verification requests.
     fetchRequests();
 });

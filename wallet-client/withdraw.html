@@ -5,78 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Withdraw Funds</title>
   <link rel="stylesheet" href="css/style.css">
-  <link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
-/>
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body class="dashboard-body">
 
-    <!-- Sidebar -->
-<aside class="dashboard-sidebar">
+  <!-- Sidebar Navigation -->
+  <aside class="dashboard-sidebar">
     <div class="dashboard-sidebar-logo">
       <i class="fas fa-wallet"></i>
       <span>Wallet</span>
     </div>
-    
     <ul class="dashboard-sidebar-links">
-        <li class="dashboard-sidebar-item">
-            <a href="dashboard.html">
-                <i class="fas fa-home"></i>
-                <span>Dashboard</span>
-            </a>
-        </li>
-        <li class="dashboard-sidebar-item">
-            <a href="transfer.html">
-                <i class="fas fa-exchange-alt"></i>
-                <span>Transfer</span>
-            </a>
-        </li>
-        <li class="dashboard-sidebar-item">
-            <a href="transactions.html">
-                <i class="fas fa-receipt"></i>
-                <span>Transactions</span>
-            </a>
-        </li>
-        
-        <li class="dashboard-sidebar-item">
-            <a href="profile.html">
-                <i class="fas fa-user"></i>
-                <span>Account</span>
-            </a>
-        </li>
-        <!-- Replaced the Settings link with Help Center link -->
-        <li class="dashboard-sidebar-item">
-            <a href="help_center.html">
-                <i class="fas fa-question-circle"></i>
-                <span>Help Center</span>
-            </a>
-        </li>
-        <li class="dashboard-sidebar-item">
-            <a href="/digital-wallet-platform/wallet-server/user/v1/auth/logout.php">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Logout</span>
-            </a>
-        </li>
+      <li class="dashboard-sidebar-item">
+        <a href="dashboard.html">
+          <i class="fas fa-home"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="dashboard-sidebar-item">
+        <a href="transfer.html">
+          <i class="fas fa-exchange-alt"></i>
+          <span>Transfer</span>
+        </a>
+      </li>
+      <li class="dashboard-sidebar-item">
+        <a href="transactions.html">
+          <i class="fas fa-receipt"></i>
+          <span>Transactions</span>
+        </a>
+      </li>
+      <li class="dashboard-sidebar-item">
+        <a href="profile.html">
+          <i class="fas fa-user"></i>
+          <span>Account</span>
+        </a>
+      </li>
+      <li class="dashboard-sidebar-item">
+        <a href="help_center.html">
+          <i class="fas fa-question-circle"></i>
+          <span>Help Center</span>
+        </a>
+      </li>
+      <li class="dashboard-sidebar-item">
+        <a href="#" onclick="logout(); return false;">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </a>
+      </li>
     </ul>
   </aside>
-  
 
-    
-    
-
+  <!-- Main Content Area -->
   <main class="dashboard-main">
-    <!-- Added Header (Same as Dashboard) -->
+    <!-- Header: Displays user information and quick actions -->
     <header class="dashboard-header">
       <div class="dashboard-user">
         <div class="dashboard-user-avatar">
-            <i class="fas fa-user"></i>
-          </div>
+          <i class="fas fa-user"></i>
+        </div>
         <div class="dashboard-user-info">
           <h2 class="dashboard-user-name">User-30ee7</h2>
           <p class="dashboard-user-meta">VIP Level: Regular User</p>
@@ -87,9 +75,8 @@
         <button class="dashboard-withdraw-btn" onclick="window.location.href='withdraw.html';">Withdraw</button>
       </div>
     </header>
-    <!-- End Added Header -->
 
-    <!-- Withdraw Form Section -->
+    <!-- Withdraw Funds Form Section -->
     <section class="transaction-container">
       <h2 class="transaction-title">Withdraw Funds</h2>
       <form class="transaction-form" id="withdrawForm">
@@ -104,5 +91,7 @@
 
   <script src="js/withdraw.js"></script>
   <script src="js/dashboard.js"></script>
+  <script src="js/logout.js"></script>
+
 </body>
 </html>
