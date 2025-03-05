@@ -1,3 +1,21 @@
+# Digital Wallet Platform
+
+## Overview
+The **Digital Wallet Platform** is a secure, scalable solution for managing user balances, performing financial transactions (deposits, withdrawals, and transfers), and handling authentication workflows. It also supports QR-based payments and includes robust password management and verification features.
+
+---
+
+## Diagrams
+
+### ER Diagram
+![ER Diagram](./diagrams/ERDiagram_Wallet.png)
+
+### Component Diagram
+![Component Diagram](./diagrams/ComponentDiagramWallet.pdf)
+
+---
+
+
 # Digital Wallet Platform API Documentation
 
 ## Overview
