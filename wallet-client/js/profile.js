@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     // Fetch the profile using the JWT in the header
-    axios.get("/digital-wallet-platform/wallet-server/user/v1/get_profile.php", axiosConfig)
+    axios.get("http://13.38.91.228/digital-wallet-platform/wallet-server/user/v1/get_profile.php", axiosConfig)
         .then(response => {
             if (response.data.success) {
                 document.getElementById("fullName").value = response.data.user.full_name || "";
@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
             country: document.getElementById("country").value
         };
 
-        axios.post("/digital-wallet-platform/wallet-server/user/v1/update_profile.php", formData, axiosConfig)
+        axios.post("http://13.38.91.228/user/v1/update_profile.php", formData, axiosConfig)
             .then(response => {
                 if (response.data.success) {
                     alert("Profile updated successfully!");

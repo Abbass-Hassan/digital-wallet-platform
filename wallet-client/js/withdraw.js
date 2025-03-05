@@ -16,7 +16,7 @@ document.getElementById('withdrawForm').addEventListener('submit', function(e) {
     }
 
     axios.post(
-        '/digital-wallet-platform/wallet-server/user/v1/withdraw.php',
+        'http://13.38.91.228/user/v1/withdraw.php',
         { amount: withdrawAmount },
         {
             headers: {

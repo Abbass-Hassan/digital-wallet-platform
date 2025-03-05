@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
             params.append('type', typeSelect.value);
         }
 
-        axios.get('/digital-wallet-platform/wallet-server/user/v1/get_transactions.php?' + params.toString(), axiosConfig)
+        axios.get('http://13.38.91.228/user/v1/get_transactions.php?' + params.toString(), axiosConfig)
             .then(response => {
                 if (response.data.error) {
                     transactionsList.innerHTML = `<p>Error: ${response.data.error}</p>`;

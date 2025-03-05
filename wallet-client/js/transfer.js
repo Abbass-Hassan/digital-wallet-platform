@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function() {
         };
 
         // Include JWT in the Authorization header
-        axios.post('/digital-wallet-platform/wallet-server/user/v1/transfer.php', data, {
+        axios.post('http://13.38.91.228/user/v1/transfer.php', data, {
             headers: { 
                 'Authorization': `Bearer ${token}` 
             }

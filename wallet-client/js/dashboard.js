@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const userNameElem = document.querySelector('.dashboard-user-name');
     const userMetaElem = document.querySelector('.dashboard-user-meta');
 
-    axios.get('/digital-wallet-platform/wallet-server/user/v1/get_profile.php', axiosConfig)
+    axios.get('http://13.38.91.228/user/v1/get_profile.php', axiosConfig)
         .then(response => {
             if (response.data.success) {
                 let fullName = response.data.user.full_name;
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const verificationMessage = document.getElementById('verificationMessage');
     const verificationButton  = document.getElementById('verificationButton');
 
-    axios.get('/digital-wallet-platform/wallet-server/user/v1/get_verification_status.php', axiosConfig)
+    axios.get('http://13.38.91.228/user/v1/get_verification_status.php', axiosConfig)
         .then(response => {
             if (response.data.error) {
                 verificationTitle.textContent = 'Error';
@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 5. Fetch and display the user's wallet balance
     const balanceAmountElem = document.getElementById('balanceAmount');
     if (balanceAmountElem) {
-        axios.get('/digital-wallet-platform/wallet-server/user/v1/get_balance.php', axiosConfig)
+        axios.get('http://13.38.91.228/user/v1/get_balance.php', axiosConfig)
             .then(response => {
                 if (response.data.error) {
                     balanceAmountElem.textContent = `Error: ${response.data.error}`;
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
         infoElem.textContent = used.toFixed(2) + ' / ' + limit.toFixed(2);
     }
 
-    axios.get('/digital-wallet-platform/wallet-server/user/v1/get_limits_usage.php', axiosConfig)
+    axios.get('http://13.38.91.228/user/v1/get_limits_usage.php', axiosConfig)
         .then(response => {
             if (response.data.error) {
                 dailyInfo.textContent   = 'Error';

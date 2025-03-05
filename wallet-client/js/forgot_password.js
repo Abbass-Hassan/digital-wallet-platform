@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const data = new FormData();
       data.append("email", email);
   
-      axios.post("/digital-wallet-platform/wallet-server/user/v1/request_password_reset.php", data)
+      axios.post("http://13.38.91.228/user/v1/request_password_reset.php", data)
         .then(response => {
           // For security, the response should be generic.
           if (response.data.error) {

@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
         formData.append("id_document", fileInput.files[0]);
         formData.append("referrer", document.referrer);
 
-        axios.post("http://localhost/digital-wallet-platform/wallet-server/user/v1/verification.php", formData, {
+        axios.post("http://13.38.91.228/user/v1/verification.php", formData, {
             headers: { 
                 "Content-Type": "multipart/form-data",
                 "Authorization": `Bearer ${token}`

@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
     data.append("new_password", newPassword);
     data.append("confirm_password", confirmPassword);
 
-    axios.post("/digital-wallet-platform/wallet-server/user/v1/reset_password.php", data)
+    axios.post("http://13.38.91.228/user/v1/reset_password.php", data)
       .then(response => {
         if (response.data.error) {
           alert(response.data.error);

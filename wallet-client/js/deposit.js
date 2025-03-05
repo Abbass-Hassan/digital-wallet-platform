@@ -17,7 +17,7 @@ document.getElementById('depositForm').addEventListener('submit', function(e) {
 
     // Include the JWT in the Authorization header
     axios.post(
-        '/digital-wallet-platform/wallet-server/user/v1/deposit.php',
+        'http://13.38.91.228/user/v1/deposit.php',
         { amount: depositAmount },
         {
             headers: {
