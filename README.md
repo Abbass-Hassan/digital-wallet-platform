@@ -223,8 +223,3 @@ All API responses will return a JSON error message in case of failure:
 - Password resets are handled via secure email links.
 
 For further integration support, contact our API support team.
-
----
-
-## License
-This project is licensed under the MIT License.
