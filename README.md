@@ -15,6 +15,12 @@ The **Digital Wallet Platform** is a secure, scalable solution for managing user
 
 ---
 
+## Hosting Details
+- **Server IP:** [http://ec2-13-38-91-228.eu-west-3.compute.amazonaws.com/](http://ec2-13-38-91-228.eu-west-3.compute.amazonaws.com/)
+- **Documentation URL:** [https://abbass-hassan.github.io/digital-wallet-platform/](https://abbass-hassan.github.io/digital-wallet-platform/)
+
+---
+
 
 # Digital Wallet Platform API Documentation
 
