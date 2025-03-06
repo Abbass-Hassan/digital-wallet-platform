@@ -4,7 +4,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     // Prepare form data and perform login API call
     const formData = new FormData(this);
     try {
-        const response = await axios.post(this.action, formData);
+        const response = await axios.post("http://ec2-13-38-91-228.eu-west-3.compute.amazonaws.com/user/v1/auth/login.php", formData);
         if (response.data && response.data.status === 'success') {
             // Store the JWT and user info, then redirect to dashboard
             const token = response.data.token;

@@ -16,7 +16,7 @@ document.getElementById('withdrawForm').addEventListener('submit', function(e) {
 
     // Initiate withdrawal API call with JWT authorization
     axios.post(
-        'http://localhost/digital-wallet-platform/wallet-server/user/v1/withdraw.php',
+        'http://ec2-13-38-91-228.eu-west-3.compute.amazonaws.com/user/v1/withdraw.php',
         { amount: withdrawAmount },
         { headers: { 'Authorization': `Bearer ${token}` } }
     )

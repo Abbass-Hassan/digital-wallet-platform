@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
     data.append("email", email);
 
     // Make API call to request a password reset
-    axios.post("http://localhost/digital-wallet-platform/wallet-server/user/v1/request_password_reset.php", data)
+    axios.post("http://ec2-13-38-91-228.eu-west-3.compute.amazonaws.com/user/v1/request_password_reset.php", data)
       .then(response => {
         if (!response.data.error) {
           // On success, redirect to login page

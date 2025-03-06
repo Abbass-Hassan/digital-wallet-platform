@@ -4,7 +4,7 @@ document.getElementById('adminLoginForm').addEventListener('submit', function(e)
   // Build form data from the form fields
   const formData = new FormData(this);
 
-  axios.post(this.action, formData)
+  axios.post("http://ec2-13-38-91-228.eu-west-3.compute.amazonaws.com/admin/v1/auth/login.php", formData)
       .then(function(response) {
           // Check if the server returned a valid response with a message and success status
           if (response.data && response.data.status === 'success') {
